@@ -26,13 +26,13 @@ Determine what type of visual is needed:
 - **Data flow** — how data moves through the system
 
 ### 2. Read Context
-- Read `.forge/qg/` for project context
+- Read `.forge/kb/` for project context
 - Scan codebase if diagram is about code structure
 - Read existing specs if diagramming a feature
 
 ### 3. Generate Excalidraw File
 
-Create a `.excalidraw` file at `.forge/qg/diagrams/{slug}.excalidraw`.
+Create a `.excalidraw` file at `.forge/kb/diagrams/{slug}.excalidraw`.
 
 The Excalidraw JSON format uses elements with these types:
 - `rectangle` — boxes/containers
@@ -91,7 +91,7 @@ Create the Excalidraw JSON file with well-positioned elements. Use a grid layout
 
 ### 6. Save and Open
 
-Save to `.forge/qg/diagrams/{slug}.excalidraw` and tell the user:
+Save to `.forge/kb/diagrams/{slug}.excalidraw` and tell the user:
 - Install "Excalidraw" VS Code extension to view/edit inline
 - Or open at excalidraw.com by importing the file
 - The file is version-controlled with the project
@@ -128,5 +128,5 @@ Save to `.forge/qg/diagrams/{slug}.excalidraw` and tell the user:
 - **Use consistent spacing.** Grid-aligned, ~200px gaps.
 - **Color code by domain.** Same color = same system boundary.
 - **Label connections.** Arrows should say what flows through them.
-- **Save in QG.** Diagrams are project context, not throwaway.
+- **Save in KB.** Diagrams are project context, not throwaway.
 - **Create separate files** for different aspects (don't put everything in one).

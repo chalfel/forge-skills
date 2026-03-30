@@ -16,8 +16,8 @@ If no arguments, ask: "What capability should users have that they don't have ye
 
 ## Process
 
-### 1. Read the QG (if exists)
-Read `.forge/qg/*.md` files to understand architecture and business constraints. Every spec must respect these.
+### 1. Read the KB (if exists)
+Read `.forge/kb/*.md` files to understand architecture and business constraints. Every spec must respect these.
 
 ### 2. Scan the Codebase
 Use Glob and Grep to understand:
@@ -66,7 +66,7 @@ If the capability touches 3+ repos or has clearly independent parts, offer to sp
 - **2-5 tasks per spec.** More than 5 = split into multiple specs.
 - **Focus on WHAT, not HOW.** No code snippets, no file-by-file plans.
 - **Done-when must be verifiable.** Each item should be testable.
-- **Respect the QG.** Architecture and business rules are constraints.
+- **Respect the KB.** Architecture and business rules are constraints.
 - **Mark parallelizable tasks.** Tasks without deps should run simultaneously.
 - **If multi-repo workspace**, assign `<!-- repo: folder-name -->` to each task.
 - **Keep under 20 lines** per task. If longer, it's too detailed.

@@ -36,7 +36,7 @@ Branch name comes from the spec's `<!-- branch: -->` + task slug.
 ### 4. Load Context
 
 Gather:
-- QG from `.forge/qg/*.md`
+- QG from `.forge/kb/*.md`
 - Spec description (what exists, what's missing)
 - Task done-when criteria
 - Agent system prompt (from `.forge/config.md` if specified)
@@ -55,6 +55,6 @@ Mark the task as `in_progress` in the spec file.
 ## Rules
 
 - **Never run blocked tasks.** Show why they're blocked instead.
-- **Inject QG always.** The agent must have project context.
+- **Inject KB always.** The agent must have project context.
 - **One worktree per task.** Never run two tasks in the same worktree.
 - **Parallel is default.** If multiple tasks are ready, spawn all of them.

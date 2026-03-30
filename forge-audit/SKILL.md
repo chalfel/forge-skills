@@ -1,12 +1,12 @@
 ---
 name: forge-audit
-description: Audit the codebase against the QG (knowledge base). Compares what's defined in architecture, business rules, and roadmap with what's actually implemented. Use when the user says "audit", "what's implemented", "check progress", "compare code vs qg", "what's missing from the QG", "drift check", or wants to verify alignment between plans and reality.
+description: Audit the codebase against the KB (knowledge base). Compares what's defined in architecture, business rules, and roadmap with what's actually implemented. Use when the user says "audit", "what's implemented", "check progress", "compare code vs qg", "what's missing from the KB", "drift check", or wants to verify alignment between plans and reality.
 argument-hint: [optional focus area — e.g. "architecture", "business rules", "roadmap"]
 ---
 
-# Forge Audit — QG vs Codebase Reality Check
+# Forge Audit — KB vs Codebase Reality Check
 
-You are auditing the codebase to check what's actually implemented vs what's defined in the QG (Quartel General / knowledge base). This catches drift between plans and reality.
+You are auditing the codebase to check what's actually implemented vs what's defined in the KB (Quartel General / knowledge base). This catches drift between plans and reality.
 
 ## Input
 
@@ -16,9 +16,9 @@ If no arguments, audit everything. If a focus area is given (e.g. "architecture"
 
 ## Process
 
-### 1. Read the QG
+### 1. Read the KB
 
-Read all files in `.forge/qg/`:
+Read all files in `.forge/kb/`:
 - `architecture.md` — stack, patterns, constraints
 - `business.md` — product rules, personas, vision
 - `roadmap.md` — what's in Now/Next/Later/Vision
@@ -30,7 +30,7 @@ Read all `.forge/specs/*.md` to understand what's planned and what status each h
 
 ### 3. Scan the Codebase
 
-Use Glob and Grep to verify each claim in the QG:
+Use Glob and Grep to verify each claim in the KB:
 
 **Architecture audit:**
 - Stack defined? → Check package.json, Cargo.toml, go.mod match
@@ -70,8 +70,8 @@ Output a structured report:
 - [x] REST API only (no GraphQL found)
 
 ### Drift Detected
-- [!] QG says "Redis for caching" but no Redis dependency found
-- [!] QG lists "src/modules/notifications" but directory doesn't exist
+- [!] KB says "Redis for caching" but no Redis dependency found
+- [!] KB lists "src/modules/notifications" but directory doesn't exist
 
 ### Not Verifiable
 - [?] "Max 200ms response time" — needs runtime testing
@@ -118,20 +118,20 @@ Output a structured report:
 ### 5. Suggest Actions
 
 After the report, suggest concrete actions:
-- "Update `.forge/qg/architecture.md` to remove Redis reference or add Redis"
+- "Update `.forge/kb/architecture.md` to remove Redis reference or add Redis"
 - "Create spec for LGPD compliance (missing from business rules)"
 - "Move Linear import to roadmap under 'Now — completed'"
 - "Update upload-images.md status or investigate stall"
 
 ### 6. Offer to Fix
 
-Ask: "Want me to update the QG with what I found?" If yes, update the relevant QG files to match reality (add missing items, mark completed items, remove outdated references).
+Ask: "Want me to update the KB with what I found?" If yes, update the relevant KB files to match reality (add missing items, mark completed items, remove outdated references).
 
 ## Rules
 
 - **Be specific.** Don't say "some patterns are missing" — say which ones and where.
 - **Reference line numbers.** When you find something in code, cite the file and line.
 - **Distinguish drift from intentional.** If something changed, it might be a valid evolution.
-- **Don't audit what doesn't exist.** If QG is empty, say so and offer to populate it.
+- **Don't audit what doesn't exist.** If KB is empty, say so and offer to populate it.
 - **Check git history** for stale specs — use `git log --since="2 weeks ago" -- path` to detect activity.
 - **Be constructive.** The goal is alignment, not blame.

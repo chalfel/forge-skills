@@ -1,12 +1,12 @@
 ---
 name: forge-diagram
-description: Generate architecture diagrams in Mermaid from the codebase or QG. Use when the user says "diagram", "architecture diagram", "draw the system", "show me the flow", "visualize", or wants a technical diagram. Outputs Mermaid blocks that render in markdown.
+description: Generate architecture diagrams in Mermaid from the codebase or KB. Use when the user says "diagram", "architecture diagram", "draw the system", "show me the flow", "visualize", or wants a technical diagram. Outputs Mermaid blocks that render in markdown.
 argument-hint: [what to diagram — e.g. "system architecture", "auth flow", "database schema"]
 ---
 
 # Forge Diagram — Mermaid Architecture Diagrams
 
-Generate technical diagrams in Mermaid syntax based on the codebase and QG.
+Generate technical diagrams in Mermaid syntax based on the codebase and KB.
 
 ## Input
 
@@ -58,7 +58,7 @@ CI/CD pipeline, infrastructure.
 ## Process
 
 ### 1. Read Context
-- Read `.forge/qg/architecture.md` for stack info
+- Read `.forge/kb/architecture.md` for stack info
 - Scan codebase structure with Glob
 - Read key files (models, routes, config) with Grep
 
@@ -68,8 +68,8 @@ CI/CD pipeline, infrastructure.
 - Use clear labels, not file paths
 - Group related nodes with subgraphs
 
-### 3. Save to QG
-Write the diagram to `.forge/qg/architecture.md` under a `## Diagrams` section, or create a dedicated `.forge/qg/diagrams.md` if there are multiple.
+### 3. Save to KB
+Write the diagram to `.forge/kb/architecture.md` under a `## Diagrams` section, or create a dedicated `.forge/kb/diagrams.md` if there are multiple.
 
 Format:
 ````markdown
@@ -92,4 +92,4 @@ After generating, offer:
 - **Keep diagrams focused.** One concept per diagram.
 - **Use subgraphs** for grouping (Frontend, Backend, Infrastructure).
 - **Label edges** with what flows through them (HTTP, events, queries).
-- **Save to QG** so diagrams are part of the project context.
+- **Save to KB** so diagrams are part of the project context.

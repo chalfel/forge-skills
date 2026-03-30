@@ -20,7 +20,7 @@ If no arguments, generate a report for the current state. If a period is given (
 
 Read:
 - `.forge/specs/*.md` — all specs with status, tasks, priorities
-- `.forge/qg/roadmap.md` — strategic alignment
+- `.forge/kb/roadmap.md` — strategic alignment
 - `.forge/inbox.md` — upcoming ideas
 - `git log --since="X" --oneline` — recent activity (if period given)
 - Agent dashboard state (if available)

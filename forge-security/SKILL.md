@@ -22,7 +22,7 @@ Determine what to scan:
 - `git diff` — recent uncommitted changes
 - `git diff HEAD~1` — last commit
 - Specific path — scan all files in that path
-- Read `.forge/qg/architecture.md` for stack-specific concerns
+- Read `.forge/kb/architecture.md` for stack-specific concerns
 
 ### 2. Secrets Scan
 
@@ -175,5 +175,5 @@ For each critical/high issue, offer:
 - **Be specific.** Show the vulnerable line and the fix.
 - **Check the full context.** A raw query might be parameterized elsewhere.
 - **Don't cry wolf.** Only flag real issues, not theoretical edge cases.
-- **Stack-aware.** Check for stack-specific vulnerabilities based on QG architecture.
+- **Stack-aware.** Check for stack-specific vulnerabilities based on KB architecture.
 - **Check dependencies** when package.json/lock files changed.

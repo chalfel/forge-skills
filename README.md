@@ -15,7 +15,7 @@ Forge is a VS Code extension + CLI that manages AI coding agents through structu
 | **forge-spec** | `/forge-spec` | Generate a spec with parallelizable tasks from a product idea. |
 | **forge-run** | `/forge-run` | Execute a spec/task by spawning an agent in a git worktree. |
 | **forge-status** | `/forge-status` | Overview of all specs — progress, blocked tasks, what's ready. |
-| **forge-audit** | `/forge-audit` | Compare QG (knowledge base) vs actual codebase. Detects drift. |
+| **forge-audit** | `/forge-audit` | Compare KB (knowledge base) vs actual codebase. Detects drift. |
 | **forge-review** | `/forge-review` | Code review against spec done-when criteria, QG constraints, and quality. |
 | **forge-security** | `/forge-security` | Security scan — OWASP top 10, secrets, auth issues, vulnerabilities. |
 | **forge-diagram** | `/forge-diagram` | Generate architecture diagrams in Mermaid from the codebase. |
@@ -40,7 +40,7 @@ Restart Claude Code. Skills appear as `/forge-*` commands.
 
 ```
 .forge/
-├── qg/                 # Knowledge base (injected into every agent)
+├── kb/                 # Knowledge base (injected into every agent)
 │   ├── architecture.md # Stack, patterns, constraints
 │   ├── business.md     # Product rules, vision, personas
 │   └── roadmap.md      # Now / Next / Later / Vision

@@ -14,7 +14,7 @@ Initialize Forge in the current project.
 
 ```
 .forge/
-├── qg/
+├── kb/
 │   ├── architecture.md
 │   └── business.md
 ├── specs/
@@ -42,7 +42,7 @@ You are a senior software engineer. Analyze the codebase, understand existing pa
 runs/
 ```
 
-### 4. Create QG Templates
+### 4. Create KB Templates
 
 Scan the codebase to pre-fill:
 - `architecture.md` — detect stack from package.json/Cargo.toml/go.mod, list key directories, identify patterns
@@ -56,5 +56,5 @@ Use the project description to pre-fill the business.md with relevant context.
 
 Tell the user:
 - What was created
-- To fill in `.forge/qg/business.md` with their product vision
+- To fill in `.forge/kb/business.md` with their product vision
 - To create their first spec with `/forge-spec`
