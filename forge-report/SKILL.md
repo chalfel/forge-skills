@@ -1,18 +1,18 @@
 ---
 name: forge-report
-description: Generate executive status reports from Forge data. Creates presentation-ready reports for leadership, stakeholders, or standups. Use when the user says "report", "status report", "executive summary", "report for the boss", "weekly update", "sprint report", "standup", "what did we accomplish", or needs a summary for non-technical stakeholders.
+description: Generate status reports from Forge data. Business-first for stakeholders, with optional technical appendix. Use when the user says "report", "status report", "executive summary", "report for the boss", "weekly update", "sprint report", "standup", "what did we accomplish", or needs a summary for stakeholders.
 argument-hint: [optional period like "this week", "last 7 days", "march", or focus area]
 ---
 
-# Forge Report — Executive Status Report
+# Forge Report — Business-First Status Report
 
-Generate a clean, professional status report from Forge specs, QG, and git history. Designed to be shared with leadership, stakeholders, or used in standups.
+Generate a professional status report that leads with **business impact and strategic outcomes**, not technical details. Technical info is available as an appendix for whoever needs it.
 
 ## Input
 
 The user provides: `$ARGUMENTS`
 
-If no arguments, generate a report for the current state. If a period is given (e.g. "this week", "march"), scope the report to that timeframe.
+If no arguments, generate for current state. If period given, scope to that timeframe.
 
 ## Process
 
@@ -20,127 +20,132 @@ If no arguments, generate a report for the current state. If a period is given (
 
 Read:
 - `.forge/specs/*.md` — all specs with status, tasks, priorities
+- `.forge/kb/business.md` — product vision, personas, core rules (to frame outcomes)
 - `.forge/kb/roadmap.md` — strategic alignment
+- `.forge/kb/architecture.md` — only for technical appendix
 - `.forge/inbox.md` — upcoming ideas
 - `git log --since="X" --oneline` — recent activity (if period given)
-- Agent dashboard state (if available)
 
-### 2. Calculate Metrics
+### 2. Translate Specs to Business Outcomes
 
-```
-Total specs: X
-Total tasks: X
+This is the KEY step. For every spec, translate from technical to business language:
 
-Completed:    X specs, X tasks
-In Progress:  X specs, X tasks
-Blocked:      X tasks (list reasons)
-Backlog:      X specs, X tasks
+| Technical (DON'T lead with this) | Business (Lead with THIS) |
+|---|---|
+| "Implemented OAuth with GitHub" | "Users can now sign in with one click using GitHub, reducing onboarding friction" |
+| "Extracted BillingService" | "Payment processing is now modular, enabling us to add new payment providers faster" |
+| "Added file type validation" | "Users are protected from uploading invalid files, reducing support tickets" |
+| "Migrated env X to Y" | (Don't mention — irrelevant to stakeholders) |
+| "Refactored auth middleware" | "Security infrastructure improved, preparing for compliance requirements" |
 
-Completion rate: X%
-```
-
-If period given, also calculate:
-- Tasks completed in period
-- Specs completed in period
-- New specs created in period
-- Velocity (tasks/week)
+Read `.forge/kb/business.md` to understand what the company cares about and frame outcomes accordingly.
 
 ### 3. Generate Report
-
-Format as a clean, executive-friendly document:
 
 ```markdown
 # Status Report — [Project Name]
 **Date:** [today]
 **Period:** [scope]
-**Author:** [from git config]
 
 ---
 
 ## Executive Summary
 
-[2-3 sentences: what was accomplished, what's in progress, any blockers or risks]
+[2-3 sentences framed around business goals. What capabilities were delivered? What's the impact on users/revenue/growth?]
 
-## Progress Overview
+Example: "This period we delivered social login and streamlined the payment infrastructure. Users can now sign up 60% faster with GitHub login. The modular payment system positions us to launch PagSeguro support next month, opening the Brazilian market."
 
+## Business Impact
+
+### Delivered
+
+#### Users can sign in with GitHub ✓
+Users now have a frictionless sign-up option. This directly supports our Q1 goal of reducing onboarding drop-off. Expected impact: fewer abandoned registrations, faster time-to-first-value.
+
+#### Payment infrastructure modernized ✓
+We can now integrate new payment providers in days instead of weeks. This unblocks our Latin America expansion plan (PagSeguro, MercadoPago).
+
+### In Progress
+
+#### Admin Dashboard (65% complete)
+Management team will be able to monitor user activity, manage roles, and view audit logs. Audit logging is being implemented now. Expected delivery: this week.
+
+#### Image upload improvements (25% complete)
+Users will be able to upload files up to 20MB with clear validation messages. Reduces the #1 support ticket category ("upload failed").
+
+### Blocked — Needs Decision
+
+- **Data privacy compliance (LGPD):** Defined as a business requirement but no work started. Do we prioritize this before new features?
+- **Admin analytics scope:** Should we include analytics charts in v1 or ship a simpler version first?
+
+## Strategic Alignment
+
+### Roadmap Progress
+- ✅ **Social login** — delivered, aligned with "reduce onboarding friction" goal
+- ✅ **Payment modularity** — delivered, enables LATAM expansion
+- 🔄 **Admin tools** — in progress, enables self-service for management team
+- ⬜ **Data compliance** — not started, legal requirement
+
+### What's Next
+1. Complete admin dashboard (management team needs this)
+2. Image upload improvements (top support ticket category)
+3. Data compliance assessment (legal requirement)
+
+---
+
+## Technical Appendix
+
+<details>
+<summary>Click to expand technical details</summary>
+
+### Completed Specs
+- `github-oauth.md` — 4/4 tasks done, branch merged
+- `billing-service.md` — 3/3 tasks done, branch merged
+
+### In Progress
+- `admin-dashboard.md` — 4/6 tasks, audit log service running
+- `upload-images.md` — 1/4 tasks, file validation in progress
+
+### Blocked Tasks
+- Analytics dashboard tab → depends on: audit log service
+- E2E tests → depends on: frontend + backend completion
+
+### Metrics
 | Metric | Value |
 |--------|-------|
 | Specs completed | 3/12 |
 | Tasks completed | 15/47 |
-| Completion | 32% |
-| In progress | 8 tasks across 4 specs |
-| Blocked | 2 tasks |
+| Completion rate | 32% |
+| Active agents | 2 |
+| Velocity | 8 tasks/week |
 
-## Completed This Period
-
-### Users can login with GitHub ✓
-- Backend OAuth flow, frontend button, account linking, E2E tests
-- Branch: feat/github-oauth — ready for merge
-
-### Billing service refactor ✓
-- Extracted BillingService, payment gateway interface, integration tests
-- Branch: feat/billing — merged
-
-## Currently In Progress
-
-### Admin Dashboard (4/6 tasks done)
-- **Running:** Audit log service (agent active, 45min elapsed)
-- **Blocked:** Analytics tab (waiting on audit log service)
-- **ETA:** 2 remaining tasks, both parallelizable after current completes
-
-### Upload images (1/4 tasks done)
-- **Running:** File type validation
-- **Next:** Error messages, size limit update
-- **Priority:** P1
-
-## Blockers & Risks
-
-- **Audit log service** blocked by RBAC middleware (dependency)
-- **LGPD compliance** — defined in business rules but no spec created yet
-- **No QA tests** for 3 completed specs (technical debt)
-
-## Roadmap Alignment
-
-### Now (in progress)
-- ✅ Dogfooding — active
-- ✅ Skills — 10/10 complete
-- 🔄 Focus view — implemented, testing
-- ⬜ Auto-commit — spec created, not started
-
-### Next (upcoming)
-- Break project from 1 prompt
-- CLI update
-- Public skills repo
-
-## Key Decisions Needed
-
-- [ ] Should we prioritize LGPD compliance before new features?
-- [ ] Admin dashboard scope: include analytics in v1 or defer?
-
-## Next Steps
-
-1. Complete admin dashboard (2 tasks remaining)
-2. Start upload images spec (P1)
-3. Create spec for LGPD compliance
+</details>
 ```
 
-### 4. Adapt Tone
+### 4. Framing Guidelines
 
-**For leadership/executives:**
-- Focus on outcomes, not technical details
-- Use percentages and completion metrics
-- Highlight blockers that need their input
-- Include "Key Decisions Needed" section
+**Always connect to business context:**
+- Read `business.md` for company goals, personas, KPIs
+- Every completed spec should answer: "So what? Why does this matter for the business?"
+- If you can't explain the business impact, it goes in the technical appendix only
 
-**For standup/team:**
-- More technical, include branch names
-- Show what each agent is working on
-- Include code-level blockers
+**Hierarchy of what stakeholders care about:**
+1. What users can do now that they couldn't before
+2. How it connects to company goals (growth, revenue, retention, compliance)
+3. What decisions they need to make
+4. What's coming next
+5. (Distant last) How it was built technically
 
-**For stakeholders/clients:**
-- Focus on user-facing capabilities
-- Use non-technical language
-- Emphasize "users can now do X"
+**Never lead with:**
+- Branch names, file names, or code changes
+- Internal refactors with no user-facing impact
+- Environment changes, dependency updates, config changes
+- Technical debt cleanup (unless it directly enables a business goal)
+
+**Do mention non-technical items:**
+- What infrastructure changes mean for the business (speed, reliability, new capabilities)
+- Risk reduction from security or compliance work
+- Time saved from automation or tooling improvements
 
 ### 5. Output Options
 
@@ -148,13 +153,15 @@ After generating, offer:
 - "Want me to save this to `.forge/reports/`?"
 - "Should I create a PDF?" (if document-skills available)
 - "Want a shorter version for Slack/email?"
+- "Want just the business section without the technical appendix?"
 
 ## Rules
 
-- **No jargon for executives.** "Auth flow" → "Login with GitHub feature"
-- **Lead with outcomes.** What users can do now that they couldn't before.
-- **Be honest about blockers.** Don't hide problems, frame them as decisions needed.
-- **Include velocity** when period data is available — shows trends.
-- **Celebrate wins.** Completed specs deserve recognition.
-- **Actionable next steps.** End with clear priorities, not vague plans.
-- **Keep it scannable.** Tables > paragraphs. Bullets > prose.
+- **Business first, always.** Technical details are an appendix, not the main event.
+- **Frame as user outcomes.** "Users can now X" not "We implemented Y"
+- **Connect to strategy.** Every item should link to a business goal from the KB.
+- **Decisions, not problems.** Don't say "blocked" — say "needs a decision on X"
+- **Honest about risks.** Frame them as choices: "If we delay compliance, risk is X. If we prioritize it, we delay Y."
+- **Celebrate business wins.** Not "merged PR" but "capability delivered"
+- **Scannable.** Headers, bullets, bold keywords. Busy execs skim.
+- **No vanity metrics.** "15 tasks done" means nothing. "3 new user capabilities delivered" means everything.
