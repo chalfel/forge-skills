@@ -135,5 +135,6 @@ premium gets unlimited. Need to comply with GDPR."
 - **Ask if ambiguous.** If you're not sure where something goes, ask.
 - **Respect existing structure.** Read current files first to match sections and tone.
 - **Create new KB docs** when needed (e.g., `api-standards.md`, `design-system.md`).
-- **Specs get the full format** — at minimum: heading, status, priority, created date, branch.
+- **Specs get the full format** — at minimum: heading, status, priority, created date, branch, and **Demo**.
+- **Every spec needs a demo.** If the input is tech-only ("refactor X"), find the user-facing capability it enables and make THAT the spec. The refactor becomes a task within it.
 - **One message can route to multiple places.** Don't force a single classification.

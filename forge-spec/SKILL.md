@@ -40,6 +40,8 @@ Create a file at `.forge/specs/{slug}.md` in this exact format:
 
 **What's missing:** [Gap between current state and desired capability]
 
+**Demo:** [How to demonstrate this capability when done. What does the user see/do? This must be a user-facing demonstration, not a technical validation.]
+
 ### Task: [Short task name]
 <!-- status: todo -->
 <!-- parallelizable: yes -->
@@ -63,6 +65,8 @@ If the capability touches 3+ repos or has clearly independent parts, offer to sp
 
 ## Rules
 
+- **Every spec MUST have a Demo.** If you can't demo it to a stakeholder, it's not a spec — it's a tech chore. Fold tech-only work into a spec that HAS a demo. Example: don't make a spec for "refactor billing" — make it "users can pay with PagSeguro" and include the refactor as a task within it.
+- **Demo = user-facing.** "Run a curl command" is not a demo. "User clicks Login with GitHub and sees their dashboard" is a demo.
 - **2-5 tasks per spec.** More than 5 = split into multiple specs.
 - **Focus on WHAT, not HOW.** No code snippets, no file-by-file plans.
 - **Done-when must be verifiable.** Each item should be testable.
