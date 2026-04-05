@@ -62,14 +62,17 @@ If no test setup exists, create it. Pick the framework based on the stack:
 
 #### Backend TypeScript/Node
 - **Unit/Integration** → Vitest (preferred) or Jest
+- **Integration (API)** → Vitest + Supertest + Testcontainers (if user approves)
 - **E2E (API)** → Vitest + Supertest
 
 #### Python
 - **Unit/Integration** → pytest
+- **Integration (API)** → pytest + Testcontainers (if user approves)
 - **E2E** → Playwright for Python or pytest + httpx
 
 #### Go
 - **Unit/Integration** → built-in `testing` package
+- **Integration (API)** → built-in `testing` + Testcontainers (if user approves)
 - **E2E** → built-in `testing` + `net/http/httptest`
 
 **Setup checklist:**
@@ -136,6 +139,85 @@ export default defineConfig({
   },
 });
 ```
+
+#### API-Only Integration Tests (Testcontainers)
+
+When the project is **API-only (no UI)**, integration tests should use a **real database** instead of mocking it. Before setting up Testcontainers, **ask the user**: "Your project has no UI — I'd recommend using Testcontainers to spin up a real database for integration tests. Want me to set that up?"
+
+If the user approves, configure Testcontainers for the detected database:
+
+```typescript
+// tests/setup/testcontainers.ts
+import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+
+let container: StartedPostgreSqlContainer;
+
+export async function setupTestDB() {
+  container = await new PostgreSqlContainer()
+    .withDatabase('test_db')
+    .start();
+
+  return {
+    host: container.getHost(),
+    port: container.getMappedPort(5432),
+    database: container.getDatabase(),
+    user: container.getUsername(),
+    password: container.getPassword(),
+    connectionString: container.getConnectionUri(),
+  };
+}
+
+export async function teardownTestDB() {
+  await container?.stop();
+}
+```
+
+```typescript
+// tests/integration/users.api.test.ts
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { setupTestDB, teardownTestDB } from '../setup/testcontainers';
+import { createApp } from '../../src/app';
+import request from 'supertest';
+
+describe('Users API', () => {
+  let app: Express;
+
+  beforeAll(async () => {
+    const dbConfig = await setupTestDB();
+    app = createApp({ database: dbConfig });
+  });
+
+  afterAll(async () => {
+    await teardownTestDB();
+  });
+
+  it('should create a user and persist to database', async () => {
+    const res = await request(app)
+      .post('/api/users')
+      .send({ name: 'Maria Silva', email: 'maria@example.com' });
+
+    expect(res.status).toBe(201);
+    expect(res.body).toMatchObject({ name: 'Maria Silva' });
+
+    // Verify it was actually persisted
+    const getRes = await request(app).get(`/api/users/${res.body.id}`);
+    expect(getRes.body.email).toBe('maria@example.com');
+  });
+});
+```
+
+**Testcontainers packages by database:**
+- PostgreSQL → `@testcontainers/postgresql` / `testcontainers[postgresql]`
+- MySQL → `@testcontainers/mysql` / `testcontainers[mysql]`
+- MongoDB → `@testcontainers/mongodb` / `testcontainers[mongodb]`
+- Redis → `@testcontainers/redis` / `testcontainers[redis]`
+
+**Mocking strategy for API integration tests:**
+- **Database → NEVER mock.** Use Testcontainers with a real instance. This is the default unless the user explicitly overrides it in `.forge/kb/architecture.md`.
+- **External providers (payment gateways, email services, third-party APIs) → ALWAYS mock.** Create thin adapter interfaces and mock those.
+- **Message queues, caches → use Testcontainers** if available, otherwise mock.
+
+If the user has defined a different strategy in `.forge/kb/architecture.md` (e.g., "mock database in tests"), respect that instead.
 
 ### 5. Generate Tests
 
@@ -208,6 +290,9 @@ After generating tests:
 - **Name tests as behavior.** `"should return 404 when user not found"` not `"test getUserById error"`.
 - **E2E tests use user-visible locators.** `getByRole`, `getByText`, `getByLabel` — not CSS selectors or test-ids (unless no better option).
 - **Playwright E2E must have video.** Always configure `retain-on-failure` so failures produce a debugging video in `test-results/`.
-- **Don't mock what you don't own.** Mock your own abstractions, not third-party APIs directly.
-- **Keep tests fast.** Unit tests < 100ms each. Use mocks for I/O. Only E2E tests hit real services.
+- **Don't mock what you don't own.** Mock your own abstractions (adapter interfaces), not third-party SDKs directly.
+- **Never mock the database.** Use Testcontainers for integration tests — real DB, real queries, real constraints. Only skip this if the user explicitly says otherwise in KB architecture.
+- **Always mock external providers.** Payment gateways, email services, SMS, third-party APIs — mock them via adapter interfaces.
+- **Ask before adding Testcontainers.** It requires Docker. Always ask the user before adding it to the project.
+- **Keep tests fast.** Unit tests < 100ms each. Use mocks for I/O. Integration tests with Testcontainers are slower — that's expected.
 - **Generate the install command, don't run it.** Print the command for the user to approve.
