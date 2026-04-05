@@ -114,11 +114,32 @@ export default defineConfig({
 
 **Video files are saved to the `test-results/` directory** and are only kept for failed tests, keeping CI artifacts lean.
 
+#### API-only projects (no UI)
+
+If the capability is **pure API/CLI** (no user-facing UI), skip the E2E test task and instead add an **integration test task** using Testcontainers:
+
+```markdown
+### Task: Integration tests for [capability name]
+<!-- status: todo -->
+<!-- parallelizable: no -->
+<!-- deps: [all implementation tasks] -->
+
+**Done when:**
+- Integration tests cover the API endpoints from the spec
+- Tests use Testcontainers with a real database (no DB mocking)
+- External providers (payment, email, third-party APIs) are mocked via adapter interfaces
+- Tests run green in CI
+```
+
+**Mocking strategy:**
+- **Database → real instance via Testcontainers.** Never mock the DB unless the user explicitly defines a different strategy in `.forge/kb/architecture.md`.
+- **External providers → always mock.** Payment gateways, email/SMS services, third-party APIs — mock them through thin adapter interfaces.
+
 #### Detection rules
 - **Playwright detected** → look for `playwright.config.ts`, `@playwright/test` imports, or a `e2e/`/`tests/` directory with `.spec.ts` files.
 - **Cypress detected** → follow existing Cypress patterns instead.
 - **No E2E framework detected** → recommend Playwright as default and include a setup task before the E2E test task.
-- **No UI (pure API/CLI)** → skip the E2E test task. The "Done when" criteria on implementation tasks are sufficient.
+- **No UI (pure API/CLI)** → add integration test task with Testcontainers instead of E2E. Ask the user if they want Testcontainers (requires Docker).
 
 ### 5. Offer to Split (if large)
 If the capability touches 3+ repos or has clearly independent parts, offer to split into 2-3 separate spec files.
