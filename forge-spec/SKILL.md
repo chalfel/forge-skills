@@ -60,7 +60,67 @@ Create a file at `.forge/specs/{slug}.md` in this exact format:
 - [Observable, testable outcome]
 ```
 
-### 4. Offer to Split (if large)
+### 4. Determine E2E Tests
+
+After generating the tasks, evaluate whether the capability has **user-facing flows that can be automated end-to-end**. A capability qualifies for E2E tests when it involves:
+- UI interactions (clicks, form submissions, navigation)
+- Multi-step user flows (signup → dashboard, checkout → confirmation)
+- Critical business paths (payment, authentication, data creation)
+
+If the capability qualifies, add a dedicated E2E test task to the spec:
+
+```markdown
+### Task: E2E tests for [capability name]
+<!-- status: todo -->
+<!-- parallelizable: no -->
+<!-- deps: [all implementation tasks] -->
+
+**Done when:**
+- E2E test covers the Demo scenario described above
+- Test runs green in CI
+- Test follows existing e2e patterns in the codebase (file location, naming, helpers)
+```
+
+#### Playwright video recording
+
+If the project uses **Playwright** for E2E tests, the test task MUST include video recording configured with `retain-on-failure` so failed test runs produce a video for debugging. The test file must follow this pattern:
+
+```typescript
+import { test, expect } from '@playwright/test';
+
+test.use({
+  video: {
+    mode: 'retain-on-failure',
+    size: { width: 1280, height: 720 },
+  },
+});
+
+test.describe('[Capability name]', () => {
+  test('[Demo scenario description]', async ({ page }) => {
+    // Steps that reproduce the Demo described in the spec
+  });
+});
+```
+
+And `playwright.config.ts` should have a baseline video config:
+
+```typescript
+export default defineConfig({
+  use: {
+    video: 'retain-on-failure',
+  },
+});
+```
+
+**Video files are saved to the `test-results/` directory** and are only kept for failed tests, keeping CI artifacts lean.
+
+#### Detection rules
+- **Playwright detected** → look for `playwright.config.ts`, `@playwright/test` imports, or a `e2e/`/`tests/` directory with `.spec.ts` files.
+- **Cypress detected** → follow existing Cypress patterns instead.
+- **No E2E framework detected** → recommend Playwright as default and include a setup task before the E2E test task.
+- **No UI (pure API/CLI)** → skip the E2E test task. The "Done when" criteria on implementation tasks are sufficient.
+
+### 5. Offer to Split (if large)
 If the capability touches 3+ repos or has clearly independent parts, offer to split into 2-3 separate spec files.
 
 ## Rules
