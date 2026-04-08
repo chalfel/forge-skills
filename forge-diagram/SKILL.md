@@ -61,6 +61,9 @@ CI/CD pipeline, infrastructure.
 - Read `.forge/kb/architecture.md` for stack info
 - Scan codebase structure with Glob
 - Read key files (models, routes, config) with Grep
+- Check whether `.forge/.obsidian/` exists
+
+If `.forge/.obsidian/` exists, preserve/add YAML frontmatter on any new markdown doc and use `[[wikilinks]]` when referencing related KB docs.
 
 ### 2. Generate Diagram
 - Choose the right Mermaid diagram type for what was requested
@@ -70,6 +73,15 @@ CI/CD pipeline, infrastructure.
 
 ### 3. Save to KB
 Write the diagram to `.forge/kb/architecture.md` under a `## Diagrams` section, or create a dedicated `.forge/kb/diagrams.md` if there are multiple.
+
+If you create a new markdown file in Obsidian mode, prepend frontmatter like:
+
+```yaml
+---
+tags: [forge, kb, diagram]
+updated: {today's date}
+---
+```
 
 Format:
 ````markdown
@@ -93,3 +105,4 @@ After generating, offer:
 - **Use subgraphs** for grouping (Frontend, Backend, Infrastructure).
 - **Label edges** with what flows through them (HTTP, events, queries).
 - **Save to KB** so diagrams are part of the project context.
+- **If `.forge/.obsidian/` exists, keep the markdown Obsidian-friendly.** Preserve/add frontmatter and use `[[wikilinks]]` where they improve navigation.

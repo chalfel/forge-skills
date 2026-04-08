@@ -67,8 +67,18 @@ When the info doesn't fit existing docs but is important context.
 
 ## Process
 
+### 0. Detect Obsidian Mode
+
+Check whether `.forge/.obsidian/` exists.
+
+If it exists, the project is in **Obsidian mode**. In that case:
+- Preserve existing YAML frontmatter on markdown files
+- Add frontmatter to new KB/spec docs when creating them
+- Use `[[wikilinks]]` when referencing related KB docs or specs in prose
+- Keep filenames stable and human-readable so links stay valid
+
 ### 1. Read Current State
-Read the existing `.forge/kb/` files and `.forge/specs/` to understand what's already documented.
+Read the existing `.forge/kb/` files, `.forge/specs/`, and `.forge/.obsidian/` (if present) to understand what's already documented.
 
 ### 2. Classify the Input
 Determine which category (or categories) the input belongs to. One message may contain multiple types of info.
@@ -106,6 +116,12 @@ Proceeding...
   ---
   ```
 
+If the project is in **Obsidian mode**:
+- Add YAML frontmatter to any newly created markdown file
+- Preserve frontmatter already present in existing files
+- Prefer `[[wikilinks]]` over plain text references when mentioning related docs
+- Keep markdown compatible with normal renderers too — wikilinks should be additive, not destructive
+
 ### 5. Confirm
 Show what was written and where.
 
@@ -131,10 +147,11 @@ premium gets unlimited. Need to comply with GDPR."
 
 ## Rules
 
-- **Never overwrite** existing QG content. Always append or merge.
+- **Never overwrite** existing KB content. Always append or merge.
 - **Ask if ambiguous.** If you're not sure where something goes, ask.
 - **Respect existing structure.** Read current files first to match sections and tone.
 - **Create new KB docs** when needed (e.g., `api-standards.md`, `design-system.md`).
 - **Specs get the full format** — at minimum: heading, status, priority, created date, branch, and **Demo**.
 - **Every spec needs a demo.** If the input is tech-only ("refactor X"), find the user-facing capability it enables and make THAT the spec. The refactor becomes a task within it.
 - **One message can route to multiple places.** Don't force a single classification.
+- **If `.forge/.obsidian/` exists, write Obsidian-friendly markdown.** Preserve/add frontmatter and use `[[wikilinks]]` when helpful.

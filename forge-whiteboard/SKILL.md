@@ -29,6 +29,9 @@ Determine what type of visual is needed:
 - Read `.forge/kb/` for project context
 - Scan codebase if diagram is about code structure
 - Read existing specs if diagramming a feature
+- Check whether `.forge/.obsidian/` exists
+
+If `.forge/.obsidian/` exists, mention that the file works especially well with the Obsidian Excalidraw plugin.
 
 ### 3. Generate Excalidraw File
 
@@ -130,3 +133,4 @@ Save to `.forge/kb/diagrams/{slug}.excalidraw` and tell the user:
 - **Label connections.** Arrows should say what flows through them.
 - **Save in KB.** Diagrams are project context, not throwaway.
 - **Create separate files** for different aspects (don't put everything in one).
+- **If `.forge/.obsidian/` exists, lean into Obsidian compatibility.** Mention the Excalidraw plugin and keep files in stable locations so links keep working.

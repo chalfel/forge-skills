@@ -26,6 +26,12 @@ Read:
 
 If these exist, build ON TOP of them. Don't contradict existing KB.
 
+Also check whether `.forge/.obsidian/` exists.
+If it does, the project is in **Obsidian mode**:
+- Add YAML frontmatter to newly created KB docs
+- Preserve existing frontmatter when updating files
+- Use `[[wikilinks]]` when referencing related KB docs or specs in prose
+
 ### 2. Research & Interview
 
 Ask the user targeted questions if the input is vague:
@@ -40,6 +46,18 @@ Don't ask all at once. Ask the most critical ones, infer the rest, and offer to 
 ### 3. Generate Business Plan
 
 Write to `.forge/kb/business-plan.md`:
+
+If the project is in Obsidian mode, prepend this frontmatter:
+
+```yaml
+---
+tags: [forge, kb, business]
+aliases: [business plan]
+updated: {today's date}
+---
+```
+
+Then write:
 
 ```markdown
 # Business Plan — [Product Name]
@@ -119,3 +137,4 @@ After generating, check `.forge/kb/roadmap.md`:
 - **One page.** The business plan should fit on one screen. If it's longer, it's a business thesis, not a plan.
 - **Living document.** This lives in KB and gets updated. It's not a one-time exercise.
 - **Connect to specs.** The business plan should inform what specs get created and prioritized.
+- **If `.forge/.obsidian/` exists, keep the doc Obsidian-friendly.** Preserve/add frontmatter and use `[[wikilinks]]` where references help navigation.

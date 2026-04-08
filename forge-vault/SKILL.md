@@ -19,7 +19,7 @@ If no arguments, detect existing Obsidian setup or offer to create one.
 ### 1. Detect Existing Setup
 
 Check:
-- Does `.forge/` exist? If not, run `/forge-init` first.
+- Does `.forge/` exist? If not, run the Forge init skill first (`/skill:forge-init` in Pi).
 - Does `.forge/.obsidian/` exist? If yes, vault is already connected.
 - Does the user have Obsidian installed? Check for `~/Library/Application Support/obsidian/` (macOS) or `~/.config/obsidian/` (Linux).
 
@@ -114,8 +114,8 @@ But DO commit `.obsidian/app.json` so vault settings are shared.
 
 Tell the user about plugins that enhance Forge in Obsidian:
 
-- **Excalidraw** — visual diagrams inline (works with `/forge-whiteboard` output)
-- **Mermaid** — renders mermaid blocks from `/forge-diagram`
+- **Excalidraw** — visual diagrams inline (works with Forge whiteboard output)
+- **Mermaid** — renders Mermaid blocks from Forge diagram output
 - **Kanban** — can view specs as a kanban board
 - **Dataview** — query specs by status, priority, tags
 - **Git** — auto-commit vault changes
@@ -136,14 +136,17 @@ Output:
 - "Your KB, specs, and inbox are now browsable with graph view, backlinks, and search"
 - "Install Excalidraw and Dataview plugins for the best experience"
 
-## Updating Other Skills
+## Obsidian Mode Contract
 
-When this skill runs, update the Forge behavior for this project:
+A project with `.forge/.obsidian/` is in **Obsidian mode**.
 
-All forge skills that write to `.forge/` should now:
-- Add YAML frontmatter with tags to new files
-- Use `[[wikilinks]]` when referencing other docs (e.g., specs mentioning architecture docs)
-- This makes the graph view useful — connections between docs are visible
+All Forge skills that write to `.forge/` should detect this marker and:
+- Add YAML frontmatter with tags to newly created markdown files
+- Preserve frontmatter already present in existing files
+- Use `[[wikilinks]]` when referencing other docs (e.g. specs mentioning architecture docs)
+- Keep filenames stable so backlinks and graph connections stay valid
+
+This makes the graph view useful while keeping the markdown readable outside Obsidian too.
 
 ## Rules
 

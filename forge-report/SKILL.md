@@ -25,6 +25,9 @@ Read:
 - `.forge/kb/architecture.md` — only for technical appendix
 - `.forge/inbox.md` — upcoming ideas
 - `git log --since="X" --oneline` — recent activity (if period given)
+- `.forge/.obsidian/` if present
+
+If `.forge/.obsidian/` exists and the report is saved to disk, preserve/add YAML frontmatter and use `[[wikilinks]]` when referencing KB docs or specs.
 
 ### 2. Translate Specs to Business Outcomes
 
@@ -155,6 +158,16 @@ After generating, offer:
 - "Want a shorter version for Slack/email?"
 - "Want just the business section without the technical appendix?"
 
+If saving to `.forge/reports/` in Obsidian mode, prepend frontmatter like:
+
+```yaml
+---
+tags: [forge, report]
+created: {today's date}
+period: [scope]
+---
+```
+
 ## Rules
 
 - **Business first, always.** Technical details are an appendix, not the main event.
@@ -165,3 +178,4 @@ After generating, offer:
 - **Celebrate business wins.** Not "merged PR" but "capability delivered"
 - **Scannable.** Headers, bullets, bold keywords. Busy execs skim.
 - **No vanity metrics.** "15 tasks done" means nothing. "3 new user capabilities delivered" means everything.
+- **If `.forge/.obsidian/` exists, keep saved reports Obsidian-friendly.** Preserve/add frontmatter and use `[[wikilinks]]` where useful.

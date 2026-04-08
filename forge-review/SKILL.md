@@ -1,131 +1,70 @@
 ---
 name: forge-review
-description: Code review agent for Forge. Reviews changes made by agents against the spec's done-when criteria, KB constraints, and code quality standards. Use when the user says "review", "code review", "check the code", "review changes", or after an agent finishes a task. Also triggers on "forge review".
-argument-hint: [optional spec name or file path to review]
+description: Review Forge tasks that have PRs open. Use when the user says "review", "forge review", "check the PR", or wants to review agent work. Triggers on tasks with status in_review.
+argument-hint: [task name or spec name]
 ---
 
-# Forge Code Review
+# Forge Review
 
-You are a code review agent. Your job is to review changes made by an implementing agent and verify they meet the spec, follow the KB constraints, and maintain code quality.
+Review completed agent work against the spec's done-when criteria.
 
-## Input
+## Task Lifecycle Context
 
-The user provides: `$ARGUMENTS`
-
-If no arguments, review the most recent changes (git diff).
+```text
+todo → in_progress → in_review → done
+                         ↓
+                  changes_requested → in_progress → in_review → ...
+```
 
 ## Process
 
-### 1. Gather Context
+### 1. Find Tasks in Review
 
-Read:
-- `.forge/kb/*.md` — architecture and business constraints
-- The relevant spec file — done-when criteria
-- `git diff` or `git diff HEAD~1` — what changed
+Scan `.forge/specs/*.md` for tasks with `<!-- status: in_review -->`.
 
-### 2. Review Against Done-When Criteria
+### 2. Get the Diff
 
-For each done-when item in the spec:
-- **PASS** — the code clearly implements this
-- **PARTIAL** — partially implemented, explain what's missing
-- **FAIL** — not implemented or implemented incorrectly
-- **UNTESTABLE** — can't verify from code alone (needs manual testing)
+For each task in review:
+- If `<!-- pr: URL -->` exists, use `gh pr diff {number}`
+- Otherwise, use `git diff main...{branch}`
 
-```
-## Done-When Verification
+### 3. Review Against Spec
 
-- [PASS] GET /auth/github redirects to GitHub OAuth page
-  Found in src/auth/github.controller.ts:15 — redirect to GitHub authorize URL
+Compare the diff against:
+- The task's **done-when** criteria
+- KB constraints (architecture, business rules)
+- Code quality and existing patterns
 
-- [PARTIAL] Callback stores tokens in DB
-  Token exchange exists (auth.service.ts:42) but tokens are stored in memory, not DB
+### 4. Write Review Feedback
 
-- [FAIL] Error states return friendly messages
-  No error handling found in callback endpoint
-```
+If changes are needed, append to the task:
 
-### 3. Review Against KB Constraints
-
-Check if the changes follow:
-- **Architecture patterns** — uses correct patterns (repository, service layer, etc)
-- **Business rules** — doesn't violate any business constraints
-- **Conventions** — follows naming, file structure, code style from KB
-
-```
-## KB Compliance
-
-- [OK] Uses repository pattern (as defined in architecture.md)
-- [WARN] New endpoint not documented in API standards
-- [VIOLATION] Direct DB query in controller — KB says use service layer
+```markdown
+**Review feedback:**
+- Fix the hero CTA link — points to /register but should point to /login
+- EN translation missing for the new pricing subtitle
+- Remove unused import in pricing.tsx
 ```
 
-### 4. Code Quality Review
+Then set:
+- `<!-- status: changes_requested -->`
 
-Check for:
-- **Bugs** — logic errors, edge cases not handled, race conditions
-- **Security** — injection, auth bypass, secrets in code (defer details to /forge-security)
-- **Performance** — N+1 queries, unnecessary loops, missing indexes
-- **Tests** — are there tests? Do they cover the changes?
-- **Error handling** — are errors caught and handled properly?
-- **Types** — proper TypeScript types, no `any` abuse
+If approved:
+- `<!-- status: done -->`
 
-```
-## Code Quality
+If `.forge/.obsidian/` exists, preserve any YAML frontmatter already present in the spec file and avoid breaking `[[wikilinks]]`.
 
-### Issues
-- [BUG] src/auth/github.service.ts:28 — no null check on user lookup, will crash if user not found
-- [PERF] src/auth/github.service.ts:45 — fetching all users to find by email, should use findOne
-- [MISSING] No tests for the new OAuth flow
+### 5. Re-run with Feedback
 
-### Positive
-- Clean separation between controller and service
-- Good use of DTOs for request validation
-- Error messages are user-friendly
-```
-
-### 5. Generate Summary
-
-```
-## Review Summary
-
-| Category | Status |
-|----------|--------|
-| Done-When | 2/3 PASS, 1 PARTIAL |
-| KB Compliance | 1 WARN, 1 VIOLATION |
-| Code Quality | 1 BUG, 1 PERF issue |
-| Tests | MISSING |
-
-**Verdict: CHANGES REQUESTED**
-
-### Required Before Merge
-1. Fix null check on user lookup (BUG)
-2. Move DB query to service layer (QG VIOLATION)
-3. Store tokens in DB, not memory (PARTIAL done-when)
-
-### Recommended
-1. Add index on users.github_email
-2. Add unit tests for OAuth flow
-3. Document new endpoint in API standards
-```
-
-### 6. Offer to Fix
-
-If issues are found, offer:
-- "Want me to fix the required issues?"
-- "Should I create a follow-up spec for the recommended items?"
-
-## Verdicts
-
-- **APPROVED** — all done-when pass, no violations, no bugs
-- **APPROVED WITH NOTES** — all done-when pass, minor recommendations
-- **CHANGES REQUESTED** — bugs, violations, or failed done-when criteria
-- **BLOCKED** — critical security or architecture violation
+After review, the user can run the Forge run skill again (`/skill:forge-run` in Pi).
+Tasks with `changes_requested` are treated as ready.
+The child agent receives the review feedback in its prompt.
 
 ## Rules
 
-- **Be specific.** Reference file:line for every issue.
-- **Distinguish severity.** Required vs recommended. Don't block on style.
-- **Check the spec.** Done-when criteria are the acceptance test.
-- **Respect the KB.** Architecture violations are blockers, not suggestions.
-- **Don't rewrite.** Review, don't refactor. Point out issues, let the implementing agent fix.
-- **Acknowledge good work.** Note positive patterns too.
+- **Review against done-when criteria.** Not personal preference.
+- **Be specific and actionable.** Every feedback item should be implementable.
+- **Use the diff, not assumptions.** Base review on actual changes.
+- **Set status clearly.** Either `done` or `changes_requested`.
+- **Include PR URL in metadata** when available: `<!-- pr: URL -->`
+- **If `.forge/.obsidian/` exists, preserve Obsidian-friendly markdown structure.**

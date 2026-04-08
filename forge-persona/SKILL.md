@@ -24,6 +24,12 @@ Read:
 - `.forge/specs/*.md` — what's being built (reveals implicit user assumptions)
 - Any existing `.forge/kb/personas.md`
 
+Also check whether `.forge/.obsidian/` exists.
+If it does, the project is in **Obsidian mode**:
+- Add YAML frontmatter to newly created KB docs
+- Preserve existing frontmatter when updating files
+- Use `[[wikilinks]]` when referencing related KB docs or specs in prose
+
 ### 2. Interview (if needed)
 
 If the user gave a vague description, ask focused questions:
@@ -36,6 +42,18 @@ If the user gave a vague description, ask focused questions:
 ### 3. Generate Persona
 
 Write to `.forge/kb/personas.md` (append if personas already exist):
+
+If the project is in Obsidian mode, prepend this frontmatter:
+
+```yaml
+---
+tags: [forge, kb, persona]
+aliases: [personas, icp]
+updated: {today's date}
+---
+```
+
+Then write:
 
 ```markdown
 # Personas
@@ -129,3 +147,4 @@ If `.forge/kb/business.md` has a thin "User Personas" section, offer to update i
 - **Actionable.** Every persona section should inform a product decision. If it doesn't, cut it.
 - **Living document.** Update as you learn more about real users. Initial personas are hypotheses.
 - **Anti-personas too.** If relevant, note who is NOT the target (saves time rejecting bad feature requests).
+- **If `.forge/.obsidian/` exists, keep the doc Obsidian-friendly.** Preserve/add frontmatter and use `[[wikilinks]]` where navigation benefits from it.

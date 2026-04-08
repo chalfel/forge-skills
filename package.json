@@ -1,0 +1,10 @@
+{
+  "name": "forge-skills",
+  "version": "0.1.0",
+  "description": "Forge skills for Pi and other Agent Skills compatible coding harnesses",
+  "license": "MIT",
+  "keywords": ["pi-package", "forge", "agent-skills", "pi"],
+  "pi": {
+    "skills": ["./forge-*"]
+  }
+}

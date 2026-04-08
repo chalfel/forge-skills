@@ -19,6 +19,10 @@ If no arguments, ask: "What capability should users have that they don't have ye
 ### 1. Read the KB (if exists)
 Read `.forge/kb/*.md` files to understand architecture and business constraints. Every spec must respect these.
 
+Also check whether `.forge/.obsidian/` exists.
+- If it exists, the project is in **Obsidian mode**.
+- In Obsidian mode, add YAML frontmatter to new spec files and use `[[wikilinks]]` when referencing related KB docs or specs in prose.
+
 ### 2. Scan the Codebase
 Use Glob and Grep to understand:
 - What modules/files already exist related to this capability
@@ -27,9 +31,15 @@ Use Glob and Grep to understand:
 
 ### 3. Generate the Spec
 
-Create a file at `.forge/specs/{slug}.md` in this exact format:
+Create a file at `.forge/specs/{timestamp}-{slug}.md` in this exact format:
 
 ```markdown
+---
+tags: [forge, spec, todo]
+priority: medium
+created: {today's date}
+---
+
 # [Capability — what the user can do]
 <!-- status: todo -->
 <!-- priority: medium -->
@@ -60,6 +70,8 @@ Create a file at `.forge/specs/{slug}.md` in this exact format:
 - [Observable, testable outcome]
 ```
 
+If the project is **not** in Obsidian mode, omit the YAML frontmatter block and keep the rest of the format unchanged.
+
 ### 4. Offer to Split (if large)
 If the capability touches 3+ repos or has clearly independent parts, offer to split into 2-3 separate spec files.
 
@@ -75,3 +87,4 @@ If the capability touches 3+ repos or has clearly independent parts, offer to sp
 - **If multi-repo workspace**, assign `<!-- repo: folder-name -->` to each task.
 - **Keep under 20 lines** per task. If longer, it's too detailed.
 - **Flag unknowns.** If something needs a product decision, call it out.
+- **If `.forge/.obsidian/` exists, preserve Obsidian compatibility.** Add frontmatter, keep filenames stable, and prefer `[[wikilinks]]` in narrative text.

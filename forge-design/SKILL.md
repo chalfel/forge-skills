@@ -25,6 +25,12 @@ Read:
 - `.forge/kb/design-system.md` — if exists, existing tokens, patterns, components
 - Related specs in `.forge/specs/` — what capability is this design for
 
+Also check whether `.forge/.obsidian/` exists.
+If it does, the project is in **Obsidian mode**:
+- Add YAML frontmatter to newly created markdown docs
+- Preserve existing frontmatter when updating files
+- Use `[[wikilinks]]` when referencing related KB docs or specs in prose
+
 ### 2. Understand the User Job
 
 Before designing anything, clarify:
@@ -36,6 +42,15 @@ Before designing anything, clarify:
 ### 3. Generate Design Spec
 
 Create or update a design doc. If it's for a specific spec, add a `## Design` section to the spec file. If it's a general design (design system, patterns), save to `.forge/kb/design-system.md`.
+
+If the project is in Obsidian mode and you're creating a standalone markdown file, prepend frontmatter like:
+
+```yaml
+---
+tags: [forge, kb, design]
+updated: {today's date}
+---
+```
 
 #### User Flow (always include)
 
@@ -189,8 +204,8 @@ After generating the design, either:
 ### 6. Generate Figma/Excalidraw (optional)
 
 Offer:
-- "Want me to create an Excalidraw wireframe?" → use `/forge-whiteboard`
-- "Want me to generate a Mermaid user flow diagram?" → use `/forge-diagram`
+- "Want me to create an Excalidraw wireframe?" → use the Forge whiteboard skill (`/skill:forge-whiteboard` in Pi)
+- "Want me to generate a Mermaid user flow diagram?" → use the Forge diagram skill (`/skill:forge-diagram` in Pi)
 
 ## Rules
 
@@ -203,3 +218,4 @@ Offer:
 - **Accessibility.** Include keyboard navigation, ARIA roles, contrast notes.
 - **Connect to business.** The design should serve the persona's job-to-be-done, not just look good.
 - **Demo-ready.** The design should make the spec's Demo field obvious — what does the stakeholder see?
+- **If `.forge/.obsidian/` exists, keep docs Obsidian-friendly.** Preserve/add frontmatter and use `[[wikilinks]]` where useful.
