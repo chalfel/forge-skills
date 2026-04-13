@@ -46,7 +46,11 @@ The script creates `<repo-root>/.worktrees/<task-id>` on `$branch` based off the
 
 ### 4. Generate `CLAUDE.md` in the worktree
 
-Write `<worktree>/CLAUDE.md` in this exact order:
+KB injection is **lazy** — the child agent fetches KB entries from Linear only when it needs them. Do NOT precopy KB bodies into `CLAUDE.md`.
+
+Infer the likely-relevant KB labels from the subtask + spec text (always include `kb:architecture` and `kb:business`; add `kb:persona`, `kb:design`, `kb:api-standards`, etc. if the titles or descriptions hint at them).
+
+Write `<worktree>/CLAUDE.md` in this order:
 
 ```markdown
 # <subtask title>
@@ -54,9 +58,21 @@ Write `<worktree>/CLAUDE.md` in this exact order:
 <subtask description from Linear>
 
 ## Spec Context
-**<project title>** — Linear: <project-url>
+**<project title>** — Linear project: <project-url>
 
 <project description>
+
+## Roadmap Context
+Parent initiative: `<Now|Next|Later|Vision>` — <initiative-url>
+
+## Knowledge Base (fetch via Linear MCP when needed)
+
+The KB is the `KB` project on team `<team-name>` (id `<team-id>`). Query the Linear MCP (`https://mcp.linear.app/sse`) for issues in that project filtered by label. Pull fresh — never assume cached content.
+
+Likely-relevant labels for this subtask:
+- `kb:architecture`
+- `kb:business`
+- <any additional label inferred from subtask/spec, e.g. `kb:persona`, `kb:design`, `kb:api-standards`>
 
 ## Stack
 <detected stack summary — from package.json / Cargo.toml / go.mod / pyproject.toml, etc.>

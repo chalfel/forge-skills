@@ -1,96 +1,129 @@
 ---
 name: forge-init
-description: Initialize Forge in a project. Creates .forge/ directory with KB templates, specs, config, and gitignore. Use when the user says "init forge", "setup forge", "initialize forge", or wants to start using Forge in a project.
-argument-hint: [optional project description]
+description: Initialize Forge for a product by bootstrapping a Linear team with the Forge layout (Now/Next/Later/Vision initiatives, KB project, Inbox project) and writing the local `~/.forge/config.json`. Use when the user says "init forge", "setup forge", "initialize forge", or wants to start using Forge on a new product.
+argument-hint: [optional product name or team hint]
 ---
 
 # Forge Init
 
-Initialize Forge in the current project.
+Bootstrap a Linear team to host a Forge product, and prepare the local runtime state.
+
+Forge is full Linear:
+
+| Linear         | Forge                  |
+|----------------|------------------------|
+| Team           | Product / Workspace    |
+| Initiative     | Roadmap horizon        |
+| Project        | Spec                   |
+| Issue          | Subtask                |
+| Issue in `KB` project with `kb:*` label | KB document |
+
+All Linear operations go through the Linear MCP server (`https://mcp.linear.app/sse`).
 
 ## Process
 
-### 1. Detect Environment
+### 1. Resolve the team
 
-Check:
-- Whether `.forge/` already exists
-- Whether the user mentioned Obsidian or a vault
-- Whether Obsidian appears to be installed (`~/Library/Application Support/obsidian/` on macOS or `~/.config/obsidian/` on Linux)
+Use `$ARGUMENTS` as the product name hint.
 
-If Obsidian is available or the user asked for it, enable **Obsidian mode** for `.forge/`.
+- List existing teams via Linear MCP.
+- If a team matches (fuzzy, by name or key), confirm with the user and reuse it.
+- Otherwise, offer to create a new team (key derived from the product name).
 
-### 2. Create Directory Structure
+Abort if the user does not pick/confirm a team — `forge-init` must know which team it is operating on.
 
-```text
-.forge/
-├── kb/
-│   ├── architecture.md
-│   ├── business.md
-│   └── roadmap.md
-├── specs/
-├── inbox.md
-├── config.md
-├── runs/
-├── index.md                 # if Obsidian mode
-├── .obsidian/               # if Obsidian mode
-└── .gitignore
+### 2. Create the roadmap initiatives
+
+Inside the chosen team, ensure these four initiatives exist (create any that are missing). Idempotent: skip initiatives that already exist by name.
+
+| Name     | Purpose                                           |
+|----------|---------------------------------------------------|
+| `Now`    | Active horizon — projects (specs) being built     |
+| `Next`   | Queued — next up after Now                        |
+| `Later`  | Non-committed — ideas with some shape             |
+| `Vision` | Aspirational — long-term north stars              |
+
+Each initiative holds projects (= Specs). `forge-intake` and `forge-spec` will place new projects under the correct initiative.
+
+### 3. Create the KB project
+
+Inside the team, create (or reuse) a project named `KB`:
+
+- **Description:** `Knowledge Base for this product. Each issue is a KB document. Filter by label \`kb:*\`.`
+- **State:** `backlog`
+- **Not** attached to any initiative (it is reference material, not a deliverable).
+
+Ensure these labels exist on the team (create any missing):
+
+- `kb:architecture`
+- `kb:business`
+- `kb:roadmap`
+- `kb:persona`
+- `kb:design`
+- `kb:api-standards`
+- `kb:ops`
+
+Any additional `kb:*` label can be created on demand by `forge-intake`.
+
+### 4. Create the Inbox project
+
+Inside the team, create (or reuse) a project named `Inbox`:
+
+- **Description:** `Raw ideas and sparks. Triage into specs (new projects) or KB docs.`
+- **State:** `backlog`
+
+Ensure the label `idea` exists on the team. `forge-intake` routes exploratory items here.
+
+### 5. Write `~/.forge/config.json`
+
+```bash
+mkdir -p "$HOME/.forge/runs"
 ```
 
-### 3. Create config.md
+Create or merge `~/.forge/config.json`:
 
-```markdown
-# Forge Config
-<!-- auto-advance: confirm -->
-
-## Agents
-
-### default
-<!-- role: spec,execute -->
-You are a senior software engineer. Analyze the codebase, understand existing patterns, and implement clean, tested code.
+```json
+{
+  "default_team_id": "<resolved team id>",
+  "default_team_key": "<team key, e.g. ENG>",
+  "kb_project_id": "<KB project id>",
+  "inbox_project_id": "<Inbox project id>",
+  "initiatives": {
+    "now": "<id>",
+    "next": "<id>",
+    "later": "<id>",
+    "vision": "<id>"
+  },
+  "max_parallel_tasks": 3,
+  "port_range": [3000, 3999]
+}
 ```
 
-### 4. Create .gitignore
+If the file already exists, merge non-destructively — preserve anything the user has customized (`max_parallel_tasks`, `port_range`, extra fields).
 
-Always include:
+### 6. Seed the KB (optional)
 
-```text
-runs/
-```
+If the repo looks like a codebase (has a manifest at the root), offer to auto-create a starter KB issue by scanning:
 
-If Obsidian mode is enabled, also ignore personal workspace state:
+- **Architecture** (label `kb:architecture`): stack detected from `package.json` / `Cargo.toml` / `go.mod` / `pyproject.toml`, plus top-level directory map.
 
-```text
-.obsidian/workspace.json
-.obsidian/workspace-mobile.json
-```
-
-### 5. Create KB Templates
-
-Scan the codebase to pre-fill:
-- `architecture.md` — detect stack from package.json/Cargo.toml/go.mod, list key directories, identify patterns
-- `business.md` — leave as template for the user to fill
-- `roadmap.md` — create a basic `Now / Next / Later / Vision` structure
-
-If Obsidian mode is enabled:
-- Add YAML frontmatter with tags to new markdown files
-- Create `.forge/index.md` with wikilinks to the main docs
-- Create `.forge/.obsidian/app.json` with minimal shared settings
-
-### 6. If user provided `$ARGUMENTS`
-
-Use the project description to pre-fill `business.md` with relevant context.
+Only create this if the user says yes. Leave `kb:business`, `kb:persona`, etc. for the user (or `forge-persona`, `forge-business-plan`, `forge-design`) to fill in.
 
 ### 7. Output
 
-Tell the user:
-- What was created
-- Whether Obsidian mode was enabled
-- To fill in `.forge/kb/business.md` with their product vision
-- To create their first spec with `/forge-spec` (or `/skill:forge-spec` in Pi)
-- If Obsidian mode is enabled, to open `.forge/` as a vault
+Report:
+
+- Team name + key + URL
+- Four initiative URLs
+- KB project URL
+- Inbox project URL
+- Path to `~/.forge/config.json`
+- Next step suggestions: `forge-spec <capability>` (creates first real spec under `Now`), `forge-persona`, `forge-business-plan`.
 
 ## Rules
 
-- **Never overwrite an existing Forge setup blindly.** Merge or ask when `.forge/` already exists.
-- **If `.forge/.obsidian/` exists, preserve it.** Don't replace an existing vault config.
-- **Keep Obsidian optional.** Forge should still work perfectly without it.
+- **Never bootstrap without user confirmation on the team.** Products are expensive to undo in Linear.
+- **Idempotent.** Re-running on an already-initialized team must not duplicate initiatives, projects, or labels.
+- **Non-destructive config merge.** Never blow away existing `~/.forge/config.json` fields.
+- **No local `.forge/` directory.** KB and specs live in Linear. Only `~/.forge/` (user-level) is used, for runtime state.
+- **Do not create GitHub branches or other side effects.** `forge-init` only touches Linear + `~/.forge/`.

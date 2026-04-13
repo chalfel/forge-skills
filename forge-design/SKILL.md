@@ -1,221 +1,129 @@
 ---
 name: forge-design
-description: Generate UI/UX design specs, wireframes, user flows, and design system definitions for Forge specs. Use when the user says "design", "wireframe", "user flow", "UI spec", "design system", "layout", "screen design", "mockup", or wants to define the visual/interaction layer of a capability before implementation.
+description: Generate UI/UX design specs, wireframes, user flows, and design system definitions, saved as Linear KB issues (`kb:design` / `kb:design-system`). Use when the user says "design", "wireframe", "user flow", "UI spec", "design system", "layout", "screen design", "mockup", or wants to define the visual/interaction layer of a capability before implementation.
 argument-hint: [capability or screen to design — e.g. "onboarding flow", "dashboard layout", "settings page"]
 ---
 
-# Forge Design — UI/UX Spec Generator
+# Forge Design — Linear-native UI/UX Spec
 
-You are a product designer working within the Forge system. Your job is to generate design specs that become part of the KB or are attached to specs, ensuring agents implement UI that's consistent, user-centered, and aligned with the business strategy.
+Generate design specs that either live as standalone KB issues (`kb:design`, `kb:design-system`) or as a `## Design` block appended to an existing Linear project description (the Spec). Agents fetch these lazily via Linear MCP when implementing UI.
+
+Team is `default_team_id`, KB project is `kb_project_id`, both in `~/.forge/config.json`.
 
 ## Input
 
-The user provides: `$ARGUMENTS`
+`$ARGUMENTS` = screen, flow, or component to design.
 
-If no arguments, ask: "What screen, flow, or component do you want to design?"
+If none, ask: "What screen, flow, or component do you want to design?"
 
 ## Process
 
-### 1. Read Context
+### 1. Load context from Linear
 
-Read:
-- `.forge/kb/business.md` — product vision, personas, core rules
-- `.forge/kb/personas.md` — who are the users, what are their jobs-to-be-done
-- `.forge/kb/architecture.md` — frontend stack, component library, design system if defined
-- `.forge/kb/design-system.md` — if exists, existing tokens, patterns, components
-- Related specs in `.forge/specs/` — what capability is this design for
+Via MCP:
 
-Also check whether `.forge/.obsidian/` exists.
-If it does, the project is in **Obsidian mode**:
-- Add YAML frontmatter to newly created markdown docs
-- Preserve existing frontmatter when updating files
-- Use `[[wikilinks]]` when referencing related KB docs or specs in prose
+- `kb:business` — product vision, core rules
+- `kb:persona` (especially `kb:primary-persona`) — who is using this, jobs-to-be-done
+- `kb:architecture` — frontend stack, component library
+- `kb:design-system` — existing tokens, patterns, components (if already defined)
+- The target project (spec) description, if the design is for a specific capability
 
-### 2. Understand the User Job
+### 2. Understand the user job
 
-Before designing anything, clarify:
-- **Who** is using this screen? (which persona)
-- **What** are they trying to accomplish? (job-to-be-done)
-- **When** do they reach this screen? (what came before, what comes after)
-- **What's the success state?** (what does "done" look like for the user)
+Clarify before designing:
 
-### 3. Generate Design Spec
+- **Who** uses this screen (which persona)
+- **What** they are trying to accomplish (JTBD)
+- **When** they reach this screen (what came before / what comes after)
+- **Success state** — what "done" looks like for the user
 
-Create or update a design doc. If it's for a specific spec, add a `## Design` section to the spec file. If it's a general design (design system, patterns), save to `.forge/kb/design-system.md`.
+### 3. Decide the target
 
-If the project is in Obsidian mode and you're creating a standalone markdown file, prepend frontmatter like:
+| Scope                         | Where it goes                                                           |
+|-------------------------------|-------------------------------------------------------------------------|
+| One capability (one Spec)     | `## Design` section appended to the Linear project's description        |
+| Reusable pattern / component  | New issue in KB project, label `kb:design-system`                       |
+| Cross-cutting flow / system   | New issue in KB project, labels `kb:design` + relevant `kb:*` context   |
 
-```yaml
----
-tags: [forge, kb, design]
-updated: {today's date}
----
-```
-
-#### User Flow (always include)
-
-Show the step-by-step interaction:
-
-```
-## User Flow: [Feature Name]
-
-1. User lands on [page] → sees [initial state]
-2. User clicks [action] → [what happens]
-3. System [response] → user sees [feedback]
-4. Success: [end state]
-
-### Error States
-- [Error condition] → [what user sees] → [recovery path]
-
-### Edge Cases
-- Empty state: [what shows when no data]
-- Loading state: [what shows while fetching]
-- Overflow: [what happens with too much data]
-```
-
-#### Wireframe (ASCII for agents, description for humans)
-
-```
-## Wireframe: [Screen Name]
-
-┌─────────────────────────────────────────┐
-│  Logo        [Nav Item] [Nav Item]  [👤]│
-├─────────────────────────────────────────┤
-│                                         │
-│  Page Title                             │
-│  Subtitle / description text            │
-│                                         │
-│  ┌──────────┐ ┌──────────┐ ┌────────┐  │
-│  │  Card 1   │ │  Card 2   │ │ Card 3 │  │
-│  │  metric   │ │  metric   │ │ metric │  │
-│  └──────────┘ └──────────┘ └────────┘  │
-│                                         │
-│  ┌─────────────────────────────────┐    │
-│  │  Main Content Area              │    │
-│  │  - List item 1                  │    │
-│  │  - List item 2                  │    │
-│  │  - List item 3                  │    │
-│  └─────────────────────────────────┘    │
-│                                         │
-└─────────────────────────────────────────┘
-```
-
-#### Component Spec (for implementation agents)
-
-```
-## Components
-
-### [Component Name]
-- **Type:** [page | section | card | modal | form | list]
-- **Data:** [what data it needs]
-- **States:** [default, loading, empty, error, success]
-- **Actions:** [what user can do — click, drag, type, etc]
-- **Responsive:** [how it adapts — stack, hide, collapse]
-
-### Interaction Details
-- [Action] → [Animation/transition] → [Result]
-- Keyboard: [Tab order, shortcuts]
-- Accessibility: [ARIA roles, screen reader text]
-```
-
-#### Copy & Microcopy
-
-```
-## Copy
-
-### Headlines
-- Page title: "[text]"
-- Subtitle: "[text]"
-
-### Actions
-- Primary CTA: "[text]"
-- Secondary: "[text]"
-- Destructive: "[text]"
-
-### Empty States
-- No data: "[friendly message + what to do]"
-- Error: "[what went wrong + how to fix]"
-- Success: "[confirmation + next step]"
-
-### Tooltips & Help
-- [Element]: "[helper text]"
-```
-
-### 4. Design System Tokens (if not defined yet)
-
-If `.forge/kb/design-system.md` doesn't exist, offer to create it:
+### 4. Compose the design
 
 ```markdown
-# Design System
+## Design — <screen/flow name>
 
-## Colors
-- Primary: [hex] — main actions, links
-- Secondary: [hex] — secondary actions
-- Destructive: [hex] — delete, danger
-- Muted: [hex] — disabled, placeholder
-- Background: [hex]
-- Foreground: [hex]
+### User
+- **Persona:** <primary persona name>
+- **Job-to-be-done:** <specific outcome>
+- **Entry point:** <where user arrives from>
+- **Exit:** <where user goes after success>
 
-## Typography
-- Heading 1: [size, weight, font]
-- Heading 2: [size, weight, font]
-- Body: [size, weight, font]
-- Caption: [size, weight, font]
-- Mono: [size, weight, font] — code, data
+### Flow (steps)
+1. <Step 1 — user action → system response>
+2. <Step 2>
+3. <Step 3>
 
-## Spacing
-- xs: 4px
-- sm: 8px
-- md: 16px
-- lg: 24px
-- xl: 32px
+### Screens / Components
+#### <Screen / Component name>
+- **Purpose:** <one-line>
+- **Layout:** <columns, hierarchy, fold priority>
+- **Primary action:** <what the user clicks first>
+- **Secondary actions:**
+- **Empty state:**
+- **Loading state:**
+- **Error states:**
 
-## Border Radius
-- sm: 4px
-- md: 8px
-- lg: 12px
-- full: 9999px
+### Interaction notes
+- <Gesture / keyboard / animation cues, if relevant>
+- <Accessibility: focus order, labels, contrast>
 
-## Shadows
-- sm: [definition]
-- md: [definition]
+### Design tokens referenced
+- <spacing / color / typography tokens from `kb:design-system`>
 
-## Components
-- Button: [variants — primary, secondary, outline, ghost, destructive]
-- Card: [padding, border, shadow]
-- Input: [height, padding, border]
-- Badge: [variants — default, success, warning, error]
-- Modal: [width, padding, overlay]
-
-## Patterns
-- Loading: [skeleton | spinner | progress bar]
-- Empty state: [illustration + message + CTA]
-- Error state: [icon + message + retry]
-- Toast/notification: [position, duration, variants]
+### Open questions
+- [ ] <Decision that needs product/stakeholder input>
 ```
 
-### 5. Connect to Spec
+Keep each section tight. One screen of markdown per design issue, ideally.
 
-After generating the design, either:
-- Add `## Design` section to the relevant spec file
-- Or create `.forge/kb/designs/[feature-name].md` for larger designs
-- Update the spec's `**Demo:**` field if it was empty — the design informs what the demo looks like
+### 5. Save to Linear
 
-### 6. Generate Figma/Excalidraw (optional)
+**If the design is for a specific Spec:**
 
-Offer:
-- "Want me to create an Excalidraw wireframe?" → use the Forge whiteboard skill (`/skill:forge-whiteboard` in Pi)
-- "Want me to generate a Mermaid user flow diagram?" → use the Forge diagram skill (`/skill:forge-diagram` in Pi)
+- Fetch the target Linear project description.
+- Append the `## Design` block (preserve everything above it).
+- Add a `kb:design` label on any issues in that project that are most affected.
+
+**If the design is a reusable pattern or the first entry of a design system:**
+
+- Create a new issue in the `KB` project.
+  - **Title:** `Design — <pattern / component / flow name>`
+  - **Labels:** `kb:design` (+ `kb:design-system` if it is a reusable component/token)
+  - **State:** `backlog` (or team's `reference` state)
+  - **Description:** the markdown above.
+
+If a `kb:design-system` issue already exists, prefer updating it with a new `## <Component>` section over creating parallel issues.
+
+### 6. Cross-check
+
+After saving, scan the team for friction:
+
+- Do any active Linear projects imply UI but have no `kb:design` context? Suggest a design pass.
+- Does the persona's primary job flow end-to-end, or does a step break into a dead-end?
+- Are there existing `kb:design-system` tokens that this design should reuse instead of inventing new ones?
+
+### 7. Output
+
+Report:
+
+- Linear URL of the updated project or new KB issue
+- Tokens introduced (if any) — surface them for the user to confirm before they become canonical in `kb:design-system`
+- Implementation hand-off: link to the Spec (Linear project) that will consume this design
 
 ## Rules
 
-- **Design for the persona.** Read personas.md before designing. A solo founder needs a different UI than an enterprise team.
-- **Mobile-first.** Unless the KB says otherwise, design responsive and start with mobile.
-- **States are not optional.** Every screen needs: default, loading, empty, error, success.
-- **Copy matters.** Microcopy guides the user. "No data yet" is lazy. "Create your first spec to get started" is helpful.
-- **Don't over-design.** ASCII wireframes and component specs are enough for agents to implement. Save high-fidelity for Figma.
-- **Consistency.** If a design system exists, follow it. If not, create one.
-- **Accessibility.** Include keyboard navigation, ARIA roles, contrast notes.
-- **Connect to business.** The design should serve the persona's job-to-be-done, not just look good.
-- **Demo-ready.** The design should make the spec's Demo field obvious — what does the stakeholder see?
-- **If `.forge/.obsidian/` exists, keep docs Obsidian-friendly.** Preserve/add frontmatter and use `[[wikilinks]]` where useful.
+- **Start with the user.** No screen without a persona + JTBD.
+- **Reuse before invent.** Check `kb:design-system` first. Only create new tokens with explicit reason.
+- **Describe states, not pixels.** Default, empty, loading, error, success — every screen gets them.
+- **Mobile considerations** unless the product is desktop-only and that is documented.
+- **Accessibility baked in.** Focus order, labels, contrast — not an afterthought.
+- **Append, never overwrite.** Existing Linear project descriptions and KB issues grow, they don't get erased.
+- **Save only to Linear.** Never write to `.forge/`.
