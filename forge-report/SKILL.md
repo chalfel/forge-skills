@@ -1,136 +1,117 @@
 ---
 name: forge-report
-description: Generate status reports from Forge data. Business-first for stakeholders, with optional technical appendix. Use when the user says "report", "status report", "executive summary", "report for the boss", "weekly update", "sprint report", "standup", "what did we accomplish", or needs a summary for stakeholders.
-argument-hint: [optional period like "this week", "last 7 days", "march", or focus area]
+description: Generate status reports from Linear (initiatives, projects, KB). Business-first for stakeholders, with optional technical appendix. Use when the user says "report", "status report", "executive summary", "report for the boss", "weekly update", "sprint report", "standup", "what did we accomplish", or needs a summary for stakeholders.
+argument-hint: [optional period like "this week", "last 7 days", or a specific initiative/project name]
 ---
 
-# Forge Report — Business-First Status Report
+# Forge Report — Business-First Status Report (Linear-native)
 
-Generate a professional status report that leads with **business impact and strategic outcomes**, not technical details. Technical info is available as an appendix for whoever needs it.
+Generate a professional report that leads with **business impact and strategic outcomes**. Technical detail is an appendix.
+
+All data is pulled from Linear (team = product) via the Linear MCP server (`https://mcp.linear.app/sse`). Team comes from `default_team_id` in `~/.forge/config.json`.
 
 ## Input
 
-The user provides: `$ARGUMENTS`
-
-If no arguments, generate for current state. If period given, scope to that timeframe.
+`$ARGUMENTS` = optional period (`this week`, `last 7 days`, `march`, ...) or focus area (an initiative name or a project name).
 
 ## Process
 
-### 1. Gather Data
+### 1. Gather Linear data
 
-Read:
-- `.forge/specs/*.md` — all specs with status, tasks, priorities
-- `.forge/kb/business.md` — product vision, personas, core rules (to frame outcomes)
-- `.forge/kb/roadmap.md` — strategic alignment
-- `.forge/kb/architecture.md` — only for technical appendix
-- `.forge/inbox.md` — upcoming ideas
-- `git log --since="X" --oneline` — recent activity (if period given)
-- `.forge/.obsidian/` if present
+Via MCP, for the configured team:
 
-If `.forge/.obsidian/` exists and the report is saved to disk, preserve/add YAML frontmatter and use `[[wikilinks]]` when referencing KB docs or specs.
+- **Initiatives**: `Now / Next / Later / Vision` — for strategic framing.
+- **Projects (Specs)** by state (`backlog / started / completed`), grouped by initiative. Include subtask progress (total / done / in-progress / in-review).
+- **KB issues** with `kb:business`, `kb:business-plan`, `kb:persona` — to frame outcomes around product vision.
+- **Recent activity** — issues updated in the given period (comments, state changes).
 
-### 2. Translate Specs to Business Outcomes
+If a period is given, scope "Delivered" to projects completed in that window and "In Progress" to anything with activity in that window.
 
-This is the KEY step. For every spec, translate from technical to business language:
+### 2. Translate specs to business outcomes
 
-| Technical (DON'T lead with this) | Business (Lead with THIS) |
-|---|---|
-| "Implemented OAuth with GitHub" | "Users can now sign in with one click using GitHub, reducing onboarding friction" |
-| "Extracted BillingService" | "Payment processing is now modular, enabling us to add new payment providers faster" |
-| "Added file type validation" | "Users are protected from uploading invalid files, reducing support tickets" |
-| "Migrated env X to Y" | (Don't mention — irrelevant to stakeholders) |
-| "Refactored auth middleware" | "Security infrastructure improved, preparing for compliance requirements" |
+This is the KEY step. For every completed or active project, translate from technical to business language:
 
-Read `.forge/kb/business.md` to understand what the company cares about and frame outcomes accordingly.
+| Technical (DON'T lead with this)  | Business (Lead with THIS)                                                                 |
+|-----------------------------------|-------------------------------------------------------------------------------------------|
+| "Implemented OAuth with GitHub"   | "Users can now sign in with one click using GitHub, reducing onboarding friction"        |
+| "Extracted BillingService"        | "Payment processing is modular, enabling faster addition of new providers"               |
+| "Added file type validation"      | "Users are protected from uploading invalid files, reducing support tickets"             |
+| "Refactored auth middleware"      | "Security infrastructure improved, preparing for compliance requirements"                |
+| "Migrated env X to Y"             | (Don't mention — irrelevant to stakeholders)                                             |
 
-### 3. Generate Report
+Use `kb:business` content to understand what the company cares about (personas, revenue, compliance, growth).
+
+### 3. Generate report
 
 ```markdown
-# Status Report — [Project Name]
-**Date:** [today]
-**Period:** [scope]
+# Status Report — <Team / Product>
+**Date:** <today>
+**Period:** <scope>
 
 ---
 
 ## Executive Summary
-
-[2-3 sentences framed around business goals. What capabilities were delivered? What's the impact on users/revenue/growth?]
-
-Example: "This period we delivered social login and streamlined the payment infrastructure. Users can now sign up 60% faster with GitHub login. The modular payment system positions us to launch PagSeguro support next month, opening the Brazilian market."
+<2-3 sentences framed around business goals. What capabilities were delivered? Impact on users/revenue/growth?>
 
 ## Business Impact
 
 ### Delivered
-
-#### Users can sign in with GitHub ✓
-Users now have a frictionless sign-up option. This directly supports our Q1 goal of reducing onboarding drop-off. Expected impact: fewer abandoned registrations, faster time-to-first-value.
-
-#### Payment infrastructure modernized ✓
-We can now integrate new payment providers in days instead of weeks. This unblocks our Latin America expansion plan (PagSeguro, MercadoPago).
+#### <Capability name> ✓
+<User-facing outcome, 1-2 sentences>. <Link to strategic goal, 1 sentence>.
 
 ### In Progress
-
-#### Admin Dashboard (65% complete)
-Management team will be able to monitor user activity, manage roles, and view audit logs. Audit logging is being implemented now. Expected delivery: this week.
-
-#### Image upload improvements (25% complete)
-Users will be able to upload files up to 20MB with clear validation messages. Reduces the #1 support ticket category ("upload failed").
+#### <Capability name> (<X>% complete)
+<What the user will be able to do>. <Expected delivery>.
 
 ### Blocked — Needs Decision
-
-- **Data privacy compliance (LGPD):** Defined as a business requirement but no work started. Do we prioritize this before new features?
-- **Admin analytics scope:** Should we include analytics charts in v1 or ship a simpler version first?
+- **<Topic>:** <Question that needs a stakeholder decision>
 
 ## Strategic Alignment
 
 ### Roadmap Progress
-- ✅ **Social login** — delivered, aligned with "reduce onboarding friction" goal
-- ✅ **Payment modularity** — delivered, enables LATAM expansion
-- 🔄 **Admin tools** — in progress, enables self-service for management team
-- ⬜ **Data compliance** — not started, legal requirement
+- ✅ **<Now project>** — delivered, aligned with "<goal>"
+- 🔄 **<Now project>** — in progress
+- ⬜ **<Next project>** — not started
+- 💡 **<Later / Vision project>** — direction-setting only
 
 ### What's Next
-1. Complete admin dashboard (management team needs this)
-2. Image upload improvements (top support ticket category)
-3. Data compliance assessment (legal requirement)
+1. <Top priority>
+2. <Second priority>
+3. <Third priority>
 
 ---
 
 ## Technical Appendix
-
 <details>
-<summary>Click to expand technical details</summary>
+<summary>Click to expand</summary>
 
-### Completed Specs
-- `github-oauth.md` — 4/4 tasks done, branch merged
-- `billing-service.md` — 3/3 tasks done, branch merged
+### Completed Projects (Specs)
+- <Linear project name> — <N>/<M> subtasks done, branches merged
 
 ### In Progress
-- `admin-dashboard.md` — 4/6 tasks, audit log service running
-- `upload-images.md` — 1/4 tasks, file validation in progress
+- <Linear project name> — <N>/<M> subtasks, status
 
-### Blocked Tasks
-- Analytics dashboard tab → depends on: audit log service
-- E2E tests → depends on: frontend + backend completion
+### Blocked Subtasks
+- <subtask title> → blocked by: <other subtask>
 
 ### Metrics
-| Metric | Value |
-|--------|-------|
-| Specs completed | 3/12 |
-| Tasks completed | 15/47 |
-| Completion rate | 32% |
-| Active agents | 2 |
-| Velocity | 8 tasks/week |
+| Metric                | Value   |
+|-----------------------|---------|
+| Projects completed    | 3/12    |
+| Subtasks completed    | 15/47   |
+| Completion rate       | 32%     |
+| Active agents (local) | 2       |
+| Velocity              | 8/week  |
 
 </details>
 ```
 
-### 4. Framing Guidelines
+### 4. Framing guidelines
 
 **Always connect to business context:**
-- Read `business.md` for company goals, personas, KPIs
-- Every completed spec should answer: "So what? Why does this matter for the business?"
-- If you can't explain the business impact, it goes in the technical appendix only
+- Read KB `kb:business` and `kb:business-plan` for company goals, personas, KPIs.
+- Every completed project should answer: "So what? Why does this matter for the business?"
+- If you cannot explain the business impact, it belongs in the technical appendix only.
 
 **Hierarchy of what stakeholders care about:**
 1. What users can do now that they couldn't before
@@ -140,42 +121,26 @@ Users will be able to upload files up to 20MB with clear validation messages. Re
 5. (Distant last) How it was built technically
 
 **Never lead with:**
-- Branch names, file names, or code changes
+- Branch names, file names, code changes
 - Internal refactors with no user-facing impact
-- Environment changes, dependency updates, config changes
+- Environment / dependency / config changes
 - Technical debt cleanup (unless it directly enables a business goal)
 
-**Do mention non-technical items:**
-- What infrastructure changes mean for the business (speed, reliability, new capabilities)
-- Risk reduction from security or compliance work
-- Time saved from automation or tooling improvements
-
-### 5. Output Options
+### 5. Output options
 
 After generating, offer:
-- "Want me to save this to `.forge/reports/`?"
-- "Should I create a PDF?" (if document-skills available)
-- "Want a shorter version for Slack/email?"
-- "Want just the business section without the technical appendix?"
 
-If saving to `.forge/reports/` in Obsidian mode, prepend frontmatter like:
-
-```yaml
----
-tags: [forge, report]
-created: {today's date}
-period: [scope]
----
-```
+- "Save to Linear as a team update / post?" (if MCP supports it)
+- "Export as PDF?" (if document-skills available)
+- "Shorter version for Slack/email?"
+- "Just the business section, no technical appendix?"
 
 ## Rules
 
-- **Business first, always.** Technical details are an appendix, not the main event.
-- **Frame as user outcomes.** "Users can now X" not "We implemented Y"
-- **Connect to strategy.** Every item should link to a business goal from the KB.
-- **Decisions, not problems.** Don't say "blocked" — say "needs a decision on X"
-- **Honest about risks.** Frame them as choices: "If we delay compliance, risk is X. If we prioritize it, we delay Y."
-- **Celebrate business wins.** Not "merged PR" but "capability delivered"
+- **Business first, always.** Technical details are an appendix.
+- **Frame as user outcomes.** "Users can now X" not "We implemented Y".
+- **Connect to strategy.** Every item should link to a goal from `kb:business` or an initiative.
+- **Decisions, not problems.** Don't say "blocked" — say "needs a decision on X".
 - **Scannable.** Headers, bullets, bold keywords. Busy execs skim.
-- **No vanity metrics.** "15 tasks done" means nothing. "3 new user capabilities delivered" means everything.
-- **If `.forge/.obsidian/` exists, keep saved reports Obsidian-friendly.** Preserve/add frontmatter and use `[[wikilinks]]` where useful.
+- **No vanity metrics.** "15 subtasks done" means nothing. "3 new user capabilities delivered" means everything.
+- **Never read `.forge/`**. All content is Linear-native.

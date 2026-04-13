@@ -1,150 +1,138 @@
 ---
 name: forge-persona
-description: Create detailed user personas and save to the Forge KB. Builds empathy-driven profiles with jobs-to-be-done, pain points, behaviors, and decision drivers. Use when the user says "persona", "user persona", "who is our user", "target user", "ideal customer", "ICP", "user profile", or wants to understand their users better.
+description: Create detailed user personas and save them as Linear KB issues (label `kb:persona`). Builds empathy-driven profiles with jobs-to-be-done, pain points, behaviors, and decision drivers. Use when the user says "persona", "user persona", "who is our user", "target user", "ideal customer", "ICP", "user profile", or wants to understand their users better.
 argument-hint: [persona type or user description — e.g. "solo developer", "marketing manager at startup"]
 ---
 
-# Forge Persona
+# Forge Persona — Linear-native
 
-Create detailed, actionable user personas and save them to `.forge/kb/personas.md`. These become part of the Knowledge Base, ensuring agents build features that serve real user needs.
+Create detailed, actionable personas and store each one as an issue in the team's `KB` Linear project, tagged with label `kb:persona`. Agents fetch personas lazily via Linear MCP when they need user context.
+
+Team is `default_team_id`, KB project is `kb_project_id`, both in `~/.forge/config.json`.
 
 ## Input
 
-The user provides: `$ARGUMENTS`
+`$ARGUMENTS` = persona type or description.
 
-If no arguments, ask: "Who are your users? Describe the primary person who uses (or would use) your product."
+If none, ask: "Who are your users? Describe the primary person who uses (or would use) your product."
 
 ## Process
 
-### 1. Gather Context
+### 1. Load context from Linear
 
-Read:
-- `.forge/kb/business.md` — product vision, target market
-- `.forge/kb/business-plan.md` — target segments, value proposition
-- `.forge/specs/*.md` — what's being built (reveals implicit user assumptions)
-- Any existing `.forge/kb/personas.md`
+Via MCP:
 
-Also check whether `.forge/.obsidian/` exists.
-If it does, the project is in **Obsidian mode**:
-- Add YAML frontmatter to newly created KB docs
-- Preserve existing frontmatter when updating files
-- Use `[[wikilinks]]` when referencing related KB docs or specs in prose
+- `kb:business` and `kb:business-plan` — product vision, target market, value proposition
+- Existing `kb:persona` issues — do not duplicate, extend/differentiate
+- Projects (specs) in the team — reveal implicit user assumptions
 
-### 2. Interview (if needed)
+### 2. Interview (if vague)
 
-If the user gave a vague description, ask focused questions:
+Ask focused questions — 1–2 at a time:
+
 - "What does this person's day-to-day look like?"
-- "What's frustrating them right now about [problem area]?"
-- "How do they currently solve this? What tools do they use?"
+- "What is frustrating them right now?"
+- "How do they solve this today? What tools?"
 - "What would make them switch to something new?"
-- "Where do they hang out online? How do they discover new tools?"
+- "Where do they hang out online?"
 
-### 3. Generate Persona
+### 3. Compose the persona
 
-Write to `.forge/kb/personas.md` (append if personas already exist):
-
-If the project is in Obsidian mode, prepend this frontmatter:
-
-```yaml
----
-tags: [forge, kb, persona]
-aliases: [personas, icp]
-updated: {today's date}
----
-```
-
-Then write:
+Write the issue description using this template:
 
 ```markdown
-# Personas
-<!-- updated: {today's date} -->
+# <Persona Name> — <One-line role description>
+_Primary: yes|no_
 
-## [Persona Name] — [One-line role description]
-<!-- primary: true/false -->
+## Profile
+- **Role:**
+- **Experience:**
+- **Tech comfort:**
+- **Company size:**
+- **Budget authority:**
 
-### Profile
-- **Role:** [Job title / situation]
-- **Experience:** [Junior/Mid/Senior, years in field]
-- **Tech comfort:** [Low/Medium/High]
-- **Company size:** [Solo / Startup / SMB / Enterprise]
-- **Budget authority:** [Yes/No, spending range]
+## Jobs to be Done
+1. **Primary job:**
+2. **Related job:**
+3. **Emotional job:**
 
-### Jobs to be Done
-What this person is trying to accomplish:
-1. **Primary job:** [The main outcome they want]
-2. **Related job:** [Adjacent need that our product also solves]
-3. **Emotional job:** [How they want to FEEL — competent, in control, ahead of peers]
+## Pain Points
+- **<Pain 1>:** <description + how they cope today>
+- **<Pain 2>:** <description + how they cope today>
 
-### Pain Points
-What frustrates them today:
-- **[Pain 1]:** [Description + how they cope today]
-- **[Pain 2]:** [Description + how they cope today]
-- **[Pain 3]:** [Description + how they cope today]
+## Current Workflow
+1. <Step 1>
+2. <Step 2>
+- **Time spent:**
+- **Biggest friction:**
 
-### Current Workflow
-How they solve the problem today (before our product):
-1. [Step 1 — what tool/process]
-2. [Step 2]
-3. [Step 3]
-- **Time spent:** [hours/week on this workflow]
-- **Biggest friction:** [where they lose time or get frustrated]
+## Decision Drivers
+- **Must have:**
+- **Nice to have:**
+- **Deal breakers:**
+- **Price sensitivity:**
 
-### Decision Drivers
-What makes them choose a tool:
-- **Must have:** [Non-negotiables — deal breakers if missing]
-- **Nice to have:** [Differentiators that tip the scale]
-- **Deal breakers:** [What makes them NOT choose a tool]
-- **Price sensitivity:** [Free-only / Will pay if value is clear / Budget available]
+## Behavior
+- **Discovery:**
+- **Evaluation:**
+- **Adoption pattern:**
+- **Retention signals:**
+- **Churn signals:**
 
-### Behavior
-- **Discovery:** [How they find new tools — Twitter, HN, YouTube, colleagues]
-- **Evaluation:** [How they decide — free trial, docs, community, referral]
-- **Adoption pattern:** [Try alone first → team / Need team buy-in first]
-- **Retention signals:** [What behavior = they're sticking around]
-- **Churn signals:** [What behavior = they're about to leave]
+## Quotes (representative)
+- "<Quote capturing frustration>"
+- "<Quote capturing what they wish existed>"
+- "<Quote about how they evaluate tools>"
 
-### Quotes (Representative)
-Things this persona would actually say:
-- "[Quote that captures their frustration]"
-- "[Quote that captures what they wish existed]"
-- "[Quote about how they evaluate tools]"
-
-### How Our Product Serves Them
-- **Primary value:** [Which feature/capability matters most to them]
-- **Aha moment:** [When do they first feel the value]
-- **Success metric:** [How they measure if our product is working for them]
-
----
+## How Our Product Serves Them
+- **Primary value:**
+- **Aha moment:**
+- **Success metric:**
 ```
 
-### 4. Multiple Personas
+### 4. Save to Linear
 
-If the product serves multiple segments:
-- Create 2-3 personas max (primary + secondary)
-- Mark one as `<!-- primary: true -->`
-- Explain how they differ in needs and how the product serves each
+Create (or update) an issue in the `KB` project:
 
-### 5. Connect to Product
+- **Title:** `Persona — <Persona Name>`
+- **Labels:** `kb:persona` (also add `kb:business` if the persona maps to a revenue/pricing decision)
+- **State:** `backlog` (or team's `reference` state if one exists)
+- **Description:** the persona markdown above
 
-After creating personas, check:
-- Do current specs serve these personas' jobs-to-be-done?
+If a persona with a similar title already exists, update it (append a dated changelog section; never destructive overwrite).
+
+Mark exactly ONE persona issue as primary by adding the label `kb:primary-persona` (create the label if missing). If the user changes which persona is primary, move the label, do not duplicate.
+
+### 5. Multiple personas
+
+Max 3 issues with `kb:persona`. More than 3 = the product is not focused. Push back before creating a 4th.
+
+### 6. Cross-check
+
+After saving, scan projects (specs) in the team:
+
+- Do current specs serve this persona's jobs-to-be-done?
 - Are there pain points with no spec addressing them?
-- Does the roadmap prioritize the primary persona's needs?
+- Does the `Now` initiative prioritize the primary persona's needs?
 
-Suggest gaps: "Persona [X] needs [capability] but there's no spec for it."
+Surface gaps: "Persona <X> has pain `<Y>` but no project addresses it. Want me to run `forge-spec`?"
 
-### 6. Update Business KB
+### 7. Output
 
-If `.forge/kb/business.md` has a thin "User Personas" section, offer to update it with a summary linking to the full personas doc.
+Report:
+
+- Linear issue URL for each persona
+- Gap list (pain points → missing specs)
+- Next-step suggestions (`forge-spec` for gaps, `forge-business-plan` to refresh if personas shift the segment)
 
 ## Rules
 
-- **Based on reality, not imagination.** If the user has actual users, base personas on them. If not, base on the closest real people they know.
-- **Specific > generic.** "Maria, 28, solo dev building a SaaS in Elixir" beats "developers aged 25-40".
-- **Jobs-to-be-done > demographics.** What they're trying to accomplish matters more than their age.
-- **Max 3 personas.** More than 3 means the product isn't focused enough.
-- **Include quotes.** Fake quotes that ring true are the fastest way to build empathy.
-- **Actionable.** Every persona section should inform a product decision. If it doesn't, cut it.
-- **Living document.** Update as you learn more about real users. Initial personas are hypotheses.
-- **Anti-personas too.** If relevant, note who is NOT the target (saves time rejecting bad feature requests).
-- **If `.forge/.obsidian/` exists, keep the doc Obsidian-friendly.** Preserve/add frontmatter and use `[[wikilinks]]` where navigation benefits from it.
+- **Based on reality, not imagination.** If the user has actual users, base personas on them.
+- **Specific > generic.** "Maria, 28, solo dev building a SaaS in Elixir" beats "developers aged 25–40".
+- **Jobs-to-be-done > demographics.**
+- **Max 3 personas.** More than 3 → the product is not focused enough.
+- **Include quotes.** Fake quotes that ring true are the fastest empathy tool.
+- **Actionable.** Every section must inform a product decision, or cut it.
+- **Living document.** Append updates — never destructive overwrite.
+- **Anti-personas too.** If relevant, note who is NOT the target (saves time rejecting bad feature requests) — same issue, under a `## Not our user` section.
+- **Save only to Linear.** Never write to `.forge/`.

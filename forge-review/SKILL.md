@@ -1,70 +1,80 @@
 ---
 name: forge-review
-description: Review Forge tasks that have PRs open. Use when the user says "review", "forge review", "check the PR", or wants to review agent work. Triggers on tasks with status in_review.
-argument-hint: [task name or spec name]
+description: Run a non-interactive Claude Code reviewer on a Forge subtask PR against its Linear spec (project) context. Use when the user says "review", "forge review", "check the PR", "revisa PR", or wants to review agent work. Triggers on Linear issues currently in `in_review` state.
+argument-hint: [linear-issue-id | pr-number]
 ---
 
 # Forge Review
 
-Review completed agent work against the spec's done-when criteria.
+Review a Forge subtask PR against its Linear project description (the Spec) and Knowledge Base, and post findings via `gh pr review`.
 
-## Task Lifecycle Context
+All Linear operations go through the Linear MCP server (`https://mcp.linear.app/sse`).
 
-```text
-todo → in_progress → in_review → done
-                         ↓
-                  changes_requested → in_progress → in_review → ...
+## Input
+
+- A `linear-issue-id` (e.g. `ENG-123`) OR a `pr-number`.
+- If neither is given, list Linear issues currently in `in_review` (filtered to `default_team_id` from `~/.forge/config.json`) and ask which one.
+
+## Steps
+
+### 1. Resolve the PR
+
+- If given a `linear-issue-id`: fetch the PR URL from Linear (attachments or the comment posted by `forge-run` → `open-pr`). Fallback: `gh pr list --head feat/<issue-id>-*`.
+- If given a `pr-number`: resolve the Linear issue from the branch name (`feat/<issue-id>-<slug>`).
+
+### 2. Fetch review context
+
+Via Linear MCP:
+
+- Subtask (issue): title, description, labels
+- Parent project (the Spec): title, description
+- KB entries likely to matter, picked lazily by label — e.g. `kb:architecture` and `kb:business` always, plus anything the subtask touches (`kb:api-standards`, `kb:design`, ...). Fetch issues in the `KB` project of the same team, filtered by those labels.
+
+### 3. Run the reviewer (non-interactive)
+
+```bash
+gh pr diff <pr-number> | claude -p "$(cat <<'PROMPT'
+You are reviewing PR #<pr-number>.
+
+Linear subtask:
+  title: <subtask-title>
+  description: <subtask-description>
+
+Spec context (Linear project):
+  title: <project-title>
+  description: <project-description>
+
+Relevant KB excerpts (from Linear KB project, fetched lazily):
+<kb-excerpts-joined>
+
+Review the diff piped on stdin against:
+  - the subtask's done-when criteria
+  - spec intent and KB constraints
+  - architectural fit / existing patterns
+  - obvious bugs, missing tests, security issues
+
+For each concrete issue, post:
+  gh pr review <pr-number> --comment -b "<finding with file:line>"
+
+Submit a single final review at the end:
+  --approve               if nothing blocking
+  --request-changes -b "<summary>"   otherwise
+
+Be concise. Prefer file:line references over general advice.
+PROMPT
+)"
 ```
 
-## Process
+Log stdout/stderr to `~/.forge/runs/<issue-id>-review.log` (create the dir if missing).
 
-### 1. Find Tasks in Review
+### 4. Report back to the user
 
-Scan `.forge/specs/*.md` for tasks with `<!-- status: in_review -->`.
-
-### 2. Get the Diff
-
-For each task in review:
-- If `<!-- pr: URL -->` exists, use `gh pr diff {number}`
-- Otherwise, use `git diff main...{branch}`
-
-### 3. Review Against Spec
-
-Compare the diff against:
-- The task's **done-when** criteria
-- KB constraints (architecture, business rules)
-- Code quality and existing patterns
-
-### 4. Write Review Feedback
-
-If changes are needed, append to the task:
-
-```markdown
-**Review feedback:**
-- Fix the hero CTA link — points to /register but should point to /login
-- EN translation missing for the new pricing subtitle
-- Remove unused import in pricing.tsx
-```
-
-Then set:
-- `<!-- status: changes_requested -->`
-
-If approved:
-- `<!-- status: done -->`
-
-If `.forge/.obsidian/` exists, preserve any YAML frontmatter already present in the spec file and avoid breaking `[[wikilinks]]`.
-
-### 5. Re-run with Feedback
-
-After review, the user can run the Forge run skill again (`/skill:forge-run` in Pi).
-Tasks with `changes_requested` are treated as ready.
-The child agent receives the review feedback in its prompt.
+Return the reviewer's final decision (approved / changes requested) and a count of comments posted. Do NOT change Linear status — that transition belongs to `forge-run` → `flows/task-done.md` after merge, or to a human decision.
 
 ## Rules
 
-- **Review against done-when criteria.** Not personal preference.
-- **Be specific and actionable.** Every feedback item should be implementable.
-- **Use the diff, not assumptions.** Base review on actual changes.
-- **Set status clearly.** Either `done` or `changes_requested`.
-- **Include PR URL in metadata** when available: `<!-- pr: URL -->`
-- **If `.forge/.obsidian/` exists, preserve Obsidian-friendly markdown structure.**
+- **Review against Linear data, not assumptions.** The Spec is the Linear project description; the subtask's done-when lives in the Linear issue description.
+- **KB is lazy.** Fetch KB issues by label at review time — never assume a cached copy.
+- **Be specific and actionable.** Every comment cites `file:line`.
+- **Do not transition Linear state.** Only comment and submit `--approve` / `--request-changes`.
+- **Log everything** to `~/.forge/runs/<issue-id>-review.log`.

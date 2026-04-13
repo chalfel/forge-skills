@@ -6,7 +6,7 @@ These skills work well with **[Pi](https://github.com/badlogic/pi-mono/tree/main
 
 ## What is Forge?
 
-Forge is a VS Code extension + CLI that manages AI coding agents through structured specs. Instead of ad-hoc prompting, you define capabilities with "done when" criteria, break them into parallelizable tasks, and spawn AI agents in isolated git worktrees.
+Forge is an AI-native development workflow. **Linear is the source of truth** (teams, projects, issues, labels); **Claude Code is the executor** running inside **tmux + git worktrees** on your machine. You define capabilities as Linear projects, break them into issues (subtasks), and spawn Claude Code agents in isolated worktrees — each with its own allocated dev-server port.
 
 ## Skills
 
@@ -15,21 +15,21 @@ Forge is a VS Code extension + CLI that manages AI coding agents through structu
 
 | Skill | Description |
 |-------|-------------|
-| **forge-init** | Initialize Forge in a project. Creates `.forge/` with KB templates, specs, config, and gitignore. |
-| **forge-intake** | Intelligent info router. Analyzes what you say and saves to the right place (KB, specs, roadmap, inbox). |
-| **forge-spec** | Generate a spec with parallelizable tasks from a product idea. |
-| **forge-run** | Execute a spec/task by spawning an agent in a git worktree. |
-| **forge-status** | Overview of all specs — progress, blocked tasks, what's ready. |
-| **forge-audit** | Compare KB vs actual codebase. Detects drift. |
-| **forge-review** | Review task PRs against spec done-when criteria and KB constraints. |
+| **forge-init** | Bootstrap a Linear team: creates `Now/Next/Later/Vision` initiatives, `KB` project, `Inbox` project, `kb:*` labels, a starter `kb:repos` KB issue, and `~/.forge/config.json`. |
+| **forge-bootstrap** | New-machine / new-team setup. Reads the team's `kb:repos` KB issue, clones every repo, runs setup commands, writes `~/.forge/config.json` + `~/.forge/repos/<team>.json`. |
+| **forge-intake** | Intelligent info router. Classifies a dump and saves to Linear — KB issues, initiatives, new specs, Inbox, or the `kb:repos` list. |
+| **forge-spec** | Create a spec as a Linear project with subtask-level issues (done-when criteria, parallelizable flag, native `blocks` relations). |
+| **forge-run** | Full task lifecycle: play task, run spec, open PR, task done. Spawns Claude Code in a git worktree with a tmux window and allocated port. |
+| **forge-review** | Non-interactive reviewer — pipes `gh pr diff` into `claude -p` with Linear spec + KB context, posts via `gh pr review`. |
+| **forge-status** | Overview of Linear projects (specs) and issues (subtasks). Progress, blocked, ready to play, running locally. |
+| **forge-audit** | Compare Linear KB + specs + roadmap against the actual codebase. Detects drift. |
+| **forge-report** | Business-first status report, pulled from Linear initiatives/projects/issues. |
+| **forge-business-plan** | Generate/refine a business plan saved as a KB issue (`kb:business-plan`). |
+| **forge-persona** | Create user personas as KB issues (`kb:persona`). |
+| **forge-design** | UI/UX specs, flows, design system — saved to Linear project descriptions or KB issues (`kb:design`, `kb:design-system`). |
 | **forge-security** | Security scan — OWASP top 10, secrets, auth issues, vulnerabilities. |
 | **forge-diagram** | Generate architecture diagrams in Mermaid from the codebase. |
 | **forge-whiteboard** | Create visual whiteboards as Excalidraw files. |
-| **forge-business-plan** | Generate and save a business plan into the Forge KB. |
-| **forge-persona** | Create user personas and save them into the Forge KB. |
-| **forge-design** | Create UI/UX specs, wireframes, and design system docs for Forge. |
-| **forge-report** | Generate stakeholder-friendly status reports from Forge data. |
-| **forge-vault** | Connect `.forge/` to Obsidian for backlinks, graph view, search, and mobile access. |
 
 ## Install in Pi
 
@@ -75,57 +75,36 @@ cp -r forge-init/ ~/.claude/skills/
 
 Restart the harness after installation so the new skills are discovered.
 
-## .forge/ Structure
+## Linear Mapping (full Linear — nothing local except runtime state)
+
+Forge stores everything in Linear. There are no `.forge/specs/*.md` or `.forge/kb/*.md` files.
+
+| Linear                                          | Forge                         |
+|-------------------------------------------------|-------------------------------|
+| Team                                            | Workspace / Product           |
+| Initiative (`Now / Next / Later / Vision`)      | Roadmap horizon               |
+| Project                                         | Spec                          |
+| Issue                                           | Subtask                       |
+| Issue in `KB` project with label `kb:*`         | KB document                   |
+| Issue in `Inbox` project with label `idea`      | Raw idea / spark              |
+
+A Spec is a Linear project under one of the four initiatives. Subtasks are its issues. KB docs live as issues in a dedicated `KB` project of the same team, labeled by topic (`kb:architecture`, `kb:business`, `kb:persona`, `kb:design`, `kb:api-standards`, ...). Agents fetch KB entries **lazily** via the Linear MCP (`https://mcp.linear.app/sse`) when they need them — nothing is prebaked into `CLAUDE.md`.
+
+## Local state (`~/.forge/`)
+
+Only runtime state lives on disk:
 
 ```text
-.forge/
-├── kb/                 # Knowledge base (injected into every agent)
-│   ├── architecture.md # Stack, patterns, constraints
-│   ├── business.md     # Product rules, vision, personas
-│   ├── roadmap.md      # Now / Next / Later / Vision
-│   └── ...             # Other KB docs (personas, business-plan, design-system, etc.)
-├── specs/              # One .md per capability
-│   └── *.md
-├── inbox.md            # Ideas for the future
-├── config.md           # Agent definitions + settings
-├── runs/               # Agent logs (gitignored)
-├── index.md            # Optional Obsidian home page
-├── .obsidian/          # Optional Obsidian vault config
-└── .gitignore
+~/.forge/
+├── config.json      # linear token, default_team_id, kb_project_id, inbox_project_id,
+│                    # initiatives, max_parallel_tasks, port_range
+├── ports.json       # issue-id → allocated port
+├── sessions.json    # issue-id → tmux target
+├── worktrees.json   # issue-id → { path, branch }
+└── runs/            # reviewer logs (gitignored)
 ```
 
-## Obsidian Integration
-
-If the user has Obsidian, use `forge-vault` to make `.forge/` an Obsidian-friendly vault.
-
-That enables:
-- backlinks and graph view for KB/spec relationships
-- wikilinks between docs
-- mobile access to the KB
-- Excalidraw + Mermaid-friendly documentation inside the vault
-
-## Spec Format
-
-```md
-# Users can login with GitHub
-<!-- status: todo -->
-<!-- priority: high -->
-<!-- created: 2026-03-30 -->
-<!-- branch: forge/bold-ember-321 -->
-
-**What exists:** Basic email/password auth
-**What's missing:** GitHub OAuth integration
-
-### Task: Backend OAuth flow
-<!-- status: todo -->
-<!-- parallelizable: yes -->
-<!-- deps: none -->
-<!-- repo: backend -->
-
-**Done when:**
-- GET /auth/github redirects to GitHub
-- Callback stores tokens in DB
-```
+`forge-init` creates this layout and bootstraps the Linear team for a product.
 
 ## License
 

@@ -1,90 +1,110 @@
 ---
 name: forge-spec
-description: Create or generate a Forge spec (AI-native task definition). Use when the user wants to define a new capability, break it into parallelizable tasks, or generate a spec from a product idea. Triggers on "create spec", "new spec", "forge spec", "break this into tasks", or when working with .forge/specs/ files.
+description: Create a Forge spec as a Linear project with subtask-level issues. Use when the user wants to define a new capability, break it into parallelizable subtasks, or turn a product idea into a spec. Triggers on "create spec", "new spec", "forge spec", "break this into tasks", "criar spec", "nova spec", or mentions Forge in the context of defining work.
 argument-hint: [capability or product idea in natural language]
 ---
 
-# Forge Spec Generator
+# Forge Spec — Linear-native Spec Generator
 
-You are creating a Forge spec — an AI-native task definition that will be handed to AI agents in isolated git worktrees.
+Forge is full Linear. A **Spec is a Linear project**; the work items inside it are **Subtasks** (Linear issues). You do NOT create `.forge/specs/*.md` files anymore.
+
+All Linear operations go through the Linear MCP server (`https://mcp.linear.app/sse`).
 
 ## Input
 
-The user provides: `$ARGUMENTS`
+The user provides: `$ARGUMENTS`.
 
 If no arguments, ask: "What capability should users have that they don't have yet?"
 
 ## Process
 
-### 1. Read the KB (if exists)
-Read `.forge/kb/*.md` files to understand architecture and business constraints. Every spec must respect these.
+### 1. Read the KB
 
-Also check whether `.forge/.obsidian/` exists.
-- If it exists, the project is in **Obsidian mode**.
-- In Obsidian mode, add YAML frontmatter to new spec files and use `[[wikilinks]]` when referencing related KB docs or specs in prose.
+Read `.forge/kb/*.md` to understand architecture and business constraints. Every spec must respect these.
 
-### 2. Scan the Codebase
+If `.forge/.obsidian/` exists, the project is in **Obsidian mode** — only relevant for KB files you might touch. The spec itself lives in Linear, not on disk.
+
+### 2. Scan the codebase
+
 Use Glob and Grep to understand:
+
 - What modules/files already exist related to this capability
-- What patterns are used (frameworks, conventions)
+- What patterns / frameworks / conventions are used
 - What infrastructure can be reused
 
-### 3. Generate the Spec
+### 3. Resolve the target workspace
 
-Create a file at `.forge/specs/{timestamp}-{slug}.md` in this exact format:
+Pick the Linear workspace/team from `~/.forge/config.json` (`default_team`, `default_project_prefix`). If absent, list teams via Linear MCP and ask.
 
-```markdown
----
-tags: [forge, spec, todo]
-priority: medium
-created: {today's date}
----
+### 4. Create the Linear project (the Spec)
 
-# [Capability — what the user can do]
-<!-- status: todo -->
-<!-- priority: medium -->
-<!-- created: {today's date} -->
-<!-- branch: forge/{random-adj}-{random-noun}-{random-3digits} -->
+Via Linear MCP, create a project with:
 
-**What exists:** [Brief summary of current state]
+- **Name:** `<Capability — what the user can do>` (user-facing phrasing)
+- **Description (Markdown):**
 
-**What's missing:** [Gap between current state and desired capability]
+  ```markdown
+  **What exists:** <brief summary of current state>
 
-**Demo:** [How to demonstrate this capability when done. What does the user see/do? This must be a user-facing demonstration, not a technical validation.]
+  **What's missing:** <gap between current state and desired capability>
 
-### Task: [Short task name]
-<!-- status: todo -->
-<!-- parallelizable: yes -->
-<!-- deps: none -->
+  **Demo:** <how to demonstrate this capability when done — user-facing, not a curl command>
 
-**Done when:**
-- [Observable, testable outcome]
-- [Observable, testable outcome]
+  ## KB constraints
+  - <relevant architecture constraint>
+  - <relevant business rule>
+  ```
 
-### Task: [Another task]
-<!-- status: todo -->
-<!-- parallelizable: no -->
-<!-- deps: First task name -->
+- **State:** `backlog`
+- **Lead:** the user (if resolvable)
 
-**Done when:**
-- [Observable, testable outcome]
-```
+### 5. Create subtasks (Linear issues) under the project
 
-If the project is **not** in Obsidian mode, omit the YAML frontmatter block and keep the rest of the format unchanged.
+2–5 issues per project. Each issue = one Forge subtask a Claude Code agent can play.
 
-### 4. Offer to Split (if large)
-If the capability touches 3+ repos or has clearly independent parts, offer to split into 2-3 separate spec files.
+For each subtask, create an issue with:
+
+- **Title:** short verb-phrase, user-facing where possible
+- **Description (Markdown):**
+
+  ```markdown
+  **Done when:**
+  - <observable, testable outcome>
+  - <observable, testable outcome>
+
+  **Parallelizable:** yes|no
+  **Depends on:** <other subtask title | none>
+  **Repo:** <folder-name if multi-repo workspace | omit>
+  ```
+
+- **Project:** the one from step 4
+- **State:** `backlog`
+- **Labels:** `forge`, plus `parallelizable` if applicable
+- **Priority:** inherited from the spec, or explicit if known
+
+Dependencies between subtasks use Linear's native blocking relations (`blocks` / `blocked by`) — do not encode them only in prose.
+
+### 6. Offer to split (if large)
+
+If the capability touches 3+ repos or has clearly independent parts, offer to split into 2–3 separate Linear projects instead of one.
+
+### 7. Output
+
+Report to the user:
+
+- Linear project URL (the Spec)
+- List of created subtasks with their Linear issue ids + URLs
+- Next step: `play task <issue-id>` or `run spec <project-id>`
 
 ## Rules
 
-- **Every spec MUST have a Demo.** If you can't demo it to a stakeholder, it's not a spec — it's a tech chore. Fold tech-only work into a spec that HAS a demo. Example: don't make a spec for "refactor billing" — make it "users can pay with PagSeguro" and include the refactor as a task within it.
+- **Every spec MUST have a Demo.** If you can't demo it to a stakeholder, it's not a spec — it's a tech chore. Fold tech-only work into a spec that HAS a demo. Example: don't make a spec for "refactor billing" — make it "users can pay with PagSeguro" and include the refactor as a subtask within it.
 - **Demo = user-facing.** "Run a curl command" is not a demo. "User clicks Login with GitHub and sees their dashboard" is a demo.
-- **2-5 tasks per spec.** More than 5 = split into multiple specs.
-- **Focus on WHAT, not HOW.** No code snippets, no file-by-file plans.
+- **2–5 subtasks per spec.** More than 5 = split into multiple projects.
+- **Focus on WHAT, not HOW.** No code snippets, no file-by-file plans in Linear.
 - **Done-when must be verifiable.** Each item should be testable.
-- **Respect the KB.** Architecture and business rules are constraints.
-- **Mark parallelizable tasks.** Tasks without deps should run simultaneously.
-- **If multi-repo workspace**, assign `<!-- repo: folder-name -->` to each task.
-- **Keep under 20 lines** per task. If longer, it's too detailed.
-- **Flag unknowns.** If something needs a product decision, call it out.
-- **If `.forge/.obsidian/` exists, preserve Obsidian compatibility.** Add frontmatter, keep filenames stable, and prefer `[[wikilinks]]` in narrative text.
+- **Respect the KB.** Architecture and business rules are constraints, surface them in the project description.
+- **Use native Linear relations** for dependencies (`blocks` / `blocked by`), not prose.
+- **If multi-repo workspace**, record the target repo in the subtask description.
+- **Never create local `.forge/specs/*.md`.** Linear is the source of truth.
+- **Flag unknowns.** If something needs a product decision, call it out in the description.
