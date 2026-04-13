@@ -19,6 +19,7 @@ Forge is a VS Code extension + CLI that manages AI coding agents through structu
 | **forge-intake** | Intelligent info router. Analyzes what you say and saves to the right place (KB, specs, roadmap, inbox). |
 | **forge-spec** | Generate a spec with parallelizable tasks from a product idea. |
 | **forge-run** | Execute a spec/task by spawning an agent in a git worktree. |
+| **forge-task** | Full task lifecycle with Linear as source of truth: play task, open PR, review PR, run spec, task done (tmux + worktrees + port allocation). |
 | **forge-status** | Overview of all specs — progress, blocked tasks, what's ready. |
 | **forge-audit** | Compare KB vs actual codebase. Detects drift. |
 | **forge-review** | Review task PRs against spec done-when criteria and KB constraints. |
