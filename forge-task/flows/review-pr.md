@@ -17,8 +17,8 @@ Run the non-interactive reviewer on a PR that is already open. Use this when Ope
 
 Via Linear MCP:
 
-- Task title, description, subtasks
-- Parent milestone title + description (the spec)
+- Subtask (issue) title + description
+- Parent project title + description (the spec)
 
 ### 3. Run the reviewer
 
@@ -26,13 +26,13 @@ Via Linear MCP:
 gh pr diff <pr-number> | claude -p "$(cat <<'PROMPT'
 You are reviewing PR #<pr-number>.
 
-Linear task:
-  title: <task-title>
-  description: <task-description>
-  subtasks: <subtasks>
+Linear subtask:
+  title: <subtask-title>
+  description: <subtask-description>
 
-Spec context:
-  <milestone-description>
+Spec context (Linear project):
+  title: <project-title>
+  description: <project-description>
 
 Review the diff piped on stdin against:
   - the task's done-when / subtasks

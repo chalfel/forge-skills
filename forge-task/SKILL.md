@@ -1,14 +1,14 @@
 ---
 name: forge-task
 description: Run the full Forge task lifecycle (play → PR → review → done) with Linear as source of truth, Claude Code as executor, and tmux + git worktrees locally. Use when the user says "play task", "inicia task", "próxima task", "run spec", "abre PR", "open PR", "review PR", "finaliza task", "task done", or mentions Forge.
-argument-hint: [linear-task-id | milestone-id | flow-name]
+argument-hint: [linear-issue-id | linear-project-id | flow-name]
 ---
 
 # Forge Task
 
 Orchestrate the Forge development lifecycle.
 
-- **Source of truth:** Linear (Project → Milestone → Issue → Sub-issue).
+- **Source of truth:** Linear (Project = Spec, Issue = Subtask).
 - **Executor:** Claude Code running inside each worktree.
 - **Local environment:** tmux windows + git worktrees in `.worktrees/<task-id>`.
 
@@ -22,7 +22,7 @@ Pick the matching flow from the user's phrasing and read its reference file befo
 |----------------------------------------------------------------|------------|------------------------|
 | "play task", "inicia task", "próxima task", "start task"       | Play Task  | flows/play-task.md     |
 | "abre PR", "open PR", "push task"                              | Open PR    | flows/open-pr.md       |
-| "run spec", "roda a spec", "run milestone"                     | Run Spec   | flows/run-spec.md      |
+| "run spec", "roda a spec", "run project"                       | Run Spec   | flows/run-spec.md      |
 | "review PR", "revisa PR", "forge review"                       | Review PR  | flows/review-pr.md     |
 | "finaliza task", "task done", after merge confirmation         | Task Done  | flows/task-done.md     |
 
@@ -30,14 +30,18 @@ If the user mentions "Forge" without a clear flow, list the flows and ask which 
 
 ## Linear mapping
 
-| Linear     | Forge     |
-|------------|-----------|
-| Project    | Produto   |
-| Milestone  | Spec      |
-| Issue      | Task      |
-| Sub-issue  | Subtask   |
+Full Linear. No local `.forge/specs/*.md` files.
 
-Status lifecycle: `backlog → in_progress → in_review → done`.
+| Linear      | Forge    |
+|-------------|----------|
+| Project     | Spec     |
+| Task (Issue)| Subtask  |
+
+- A **Spec** is a Linear project — its description is the spec narrative.
+- A **Subtask** is a Linear issue inside that project — the unit of work a Claude Code agent picks up ("play task" plays a subtask).
+- We do **not** use Linear milestones or sub-issues as a semantic layer. If they exist, treat them as informational.
+
+Status lifecycle (Linear workflow states): `backlog → in_progress → in_review → done`.
 
 Update Linear status at every transition. Never change state silently.
 

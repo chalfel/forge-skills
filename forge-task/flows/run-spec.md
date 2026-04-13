@@ -1,17 +1,17 @@
 # Run Spec
 
-Fan out Play Task for every backlog task of a Linear milestone, respecting the parallelism cap.
+Fan out Play Task for every backlog subtask of a Linear project (= spec), respecting the parallelism cap.
 
 ## Input
 
-- A milestone id, or enough context to resolve one.
-- If absent, list milestones of `default_project` from `~/.forge/config.json` and ask.
+- A Linear project id or name (the Spec), or enough context to resolve one.
+- If absent, list projects of the authenticated Linear workspace and ask which one to run.
 
 ## Steps
 
 ### 1. Fetch the backlog
 
-Via Linear MCP: list issues where `milestone = <id>` AND `status = backlog`, sorted by priority then creation date.
+Via Linear MCP: list issues where `project = <id>` AND `state = backlog`, sorted by priority then creation date. These issues are the subtasks (Forge tasks) to play.
 
 If the backlog is empty, report and stop.
 

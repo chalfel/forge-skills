@@ -9,16 +9,16 @@ Start working on a single Linear task.
 
 ## Steps
 
-### 1. Fetch the task from Linear
+### 1. Fetch the subtask from Linear
 
 Via the Linear MCP server (`https://mcp.linear.app/sse`), fetch:
 
-- Issue title, description, state
-- Sub-issues (subtasks) with their titles
-- Parent milestone (the "spec") — id, title, description
-- Project — id, name, any stack hints present in the description
+- Issue (the subtask): title, description, state, labels
+- Parent project (the "spec"): id, name, description, any stack hints in the description
 
-Abort if the task is not in `backlog` status (ask the user to confirm if it is `in_progress` already — may be a resume).
+A Linear project is the Forge Spec; a Linear issue inside that project is the Forge Subtask we are about to play.
+
+Abort if the issue is not in `backlog` status (ask the user to confirm if it is `in_progress` already — may be a resume).
 
 ### 2. Allocate a port
 
@@ -49,18 +49,14 @@ The script creates `<repo-root>/.worktrees/<task-id>` on `$branch` based off the
 Write `<worktree>/CLAUDE.md` in this exact order:
 
 ```markdown
-# <task title>
+# <subtask title>
 
-<task description from Linear>
-
-## Subtasks
-- <subtask 1>
-- <subtask 2>
+<subtask description from Linear>
 
 ## Spec Context
-**<milestone title>**
+**<project title>** — Linear: <project-url>
 
-<milestone description>
+<project description>
 
 ## Stack
 <detected stack summary — from package.json / Cargo.toml / go.mod / pyproject.toml, etc.>

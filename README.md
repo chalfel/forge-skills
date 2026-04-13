@@ -76,57 +76,32 @@ cp -r forge-init/ ~/.claude/skills/
 
 Restart the harness after installation so the new skills are discovered.
 
-## .forge/ Structure
+## Linear Mapping (full Linear)
+
+Forge is full Linear — there are no `.forge/specs/*.md` files anymore.
+
+| Linear         | Forge                            |
+|----------------|----------------------------------|
+| Team           | Workspace / Product              |
+| Project        | Spec                             |
+| Issue          | Subtask                          |
+
+A Spec is a Linear project; its description carries the `What exists / What's missing / Demo` narrative. Each subtask is a Linear issue inside that project. Native Linear `blocks` / `blocked by` relations replace `<!-- deps: -->`.
+
+## Local state
+
+Task-lifecycle skills (`forge-task`, `forge-run`, `forge-review`) persist runtime state under `~/.forge/`:
 
 ```text
-.forge/
-├── kb/                 # Knowledge base (injected into every agent)
-│   ├── architecture.md # Stack, patterns, constraints
-│   ├── business.md     # Product rules, vision, personas
-│   ├── roadmap.md      # Now / Next / Later / Vision
-│   └── ...             # Other KB docs (personas, business-plan, design-system, etc.)
-├── specs/              # One .md per capability
-│   └── *.md
-├── inbox.md            # Ideas for the future
-├── config.md           # Agent definitions + settings
-├── runs/               # Agent logs (gitignored)
-├── index.md            # Optional Obsidian home page
-├── .obsidian/          # Optional Obsidian vault config
-└── .gitignore
+~/.forge/
+├── config.json      # linear token, default team, max_parallel_tasks, port_range
+├── ports.json       # task-id → allocated port
+├── sessions.json    # task-id → tmux target
+├── worktrees.json   # task-id → { path, branch }
+└── runs/            # reviewer logs (gitignored)
 ```
 
-## Obsidian Integration
-
-If the user has Obsidian, use `forge-vault` to make `.forge/` an Obsidian-friendly vault.
-
-That enables:
-- backlinks and graph view for KB/spec relationships
-- wikilinks between docs
-- mobile access to the KB
-- Excalidraw + Mermaid-friendly documentation inside the vault
-
-## Spec Format
-
-```md
-# Users can login with GitHub
-<!-- status: todo -->
-<!-- priority: high -->
-<!-- created: 2026-03-30 -->
-<!-- branch: forge/bold-ember-321 -->
-
-**What exists:** Basic email/password auth
-**What's missing:** GitHub OAuth integration
-
-### Task: Backend OAuth flow
-<!-- status: todo -->
-<!-- parallelizable: yes -->
-<!-- deps: none -->
-<!-- repo: backend -->
-
-**Done when:**
-- GET /auth/github redirects to GitHub
-- Callback stores tokens in DB
-```
+KB files (architecture, business, roadmap, personas, design, etc.) currently still live under `.forge/kb/*.md` in each repo. Migrating the KB into Linear (team-level docs + tags) is an in-flight direction — see the open discussion before authoring new KB content.
 
 ## License
 

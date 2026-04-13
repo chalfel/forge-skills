@@ -55,13 +55,13 @@ Run in the background; the reviewer posts comments via `gh pr review`:
 gh pr diff <pr-number> | claude -p "$(cat <<'PROMPT'
 You are reviewing a Forge task PR.
 
-Linear task:
-  title: <task-title>
-  description: <task-description>
-  subtasks: <subtasks>
+Linear subtask:
+  title: <subtask-title>
+  description: <subtask-description>
 
-Spec (milestone) context:
-  <milestone description>
+Spec context (Linear project):
+  title: <project-title>
+  description: <project-description>
 
 Review the diff piped on stdin against:
   - the task's done-when / subtasks
