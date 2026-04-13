@@ -15,8 +15,9 @@ Forge is an AI-native development workflow. **Linear is the source of truth** (t
 
 | Skill | Description |
 |-------|-------------|
-| **forge-init** | Bootstrap a Linear team: creates `Now/Next/Later/Vision` initiatives, `KB` project, `Inbox` project, `kb:*` labels, and `~/.forge/config.json`. |
-| **forge-intake** | Intelligent info router. Classifies a dump and saves to Linear — KB issues, initiatives, new specs, or Inbox. |
+| **forge-init** | Bootstrap a Linear team: creates `Now/Next/Later/Vision` initiatives, `KB` project, `Inbox` project, `kb:*` labels, a starter `kb:repos` KB issue, and `~/.forge/config.json`. |
+| **forge-bootstrap** | New-machine / new-team setup. Reads the team's `kb:repos` KB issue, clones every repo, runs setup commands, writes `~/.forge/config.json` + `~/.forge/repos/<team>.json`. |
+| **forge-intake** | Intelligent info router. Classifies a dump and saves to Linear — KB issues, initiatives, new specs, Inbox, or the `kb:repos` list. |
 | **forge-spec** | Create a spec as a Linear project with subtask-level issues (done-when criteria, parallelizable flag, native `blocks` relations). |
 | **forge-run** | Full task lifecycle: play task, run spec, open PR, task done. Spawns Claude Code in a git worktree with a tmux window and allocated port. |
 | **forge-review** | Non-interactive reviewer — pipes `gh pr diff` into `claude -p` with Linear spec + KB context, posts via `gh pr review`. |

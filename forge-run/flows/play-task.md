@@ -1,11 +1,11 @@
 # Play Task
 
-Start working on a single Linear task.
+Start working on a single Linear subtask (issue).
 
 ## Input
 
-- A Linear task id (e.g. `ENG-123`) or enough context to resolve one.
-- If nothing given, list the top of the default project's backlog via Linear MCP and ask which to play.
+- A Linear issue id (e.g. `ENG-123`) or enough context to resolve one.
+- If nothing given, list the top of the team's backlog via Linear MCP (scoped to `default_team_id`) and ask which to play.
 
 ## Steps
 
@@ -23,28 +23,36 @@ Abort if the issue is not in `backlog` status (ask the user to confirm if it is 
 ### 2. Allocate a port
 
 ```bash
-PORT=$(bash <skill-dir>/scripts/ports.sh allocate <task-id>)
+PORT=$(bash <skill-dir>/scripts/ports.sh allocate <issue-id>)
 ```
 
 If the script exits non-zero, the port range is exhausted. Report and stop.
 
-### 3. Create the worktree + branch
+### 3. Pick the target repo (multi-repo teams)
+
+If the subtask description has a `Repo: <name>` line AND the team has a repo map at `~/.forge/repos/<team-key>.json` (written by `forge-bootstrap`), resolve `<name>` to the local clone path and `cd` there before creating the worktree.
+
+Otherwise, use the current git repo (the one Claude Code was launched in).
+
+If the repo map exists but the declared `<name>` is missing from it, stop and tell the user to update `kb:repos` via `forge-intake` and re-run `forge-bootstrap`.
+
+### 4. Create the worktree + branch
 
 Build a slug from the task title (lowercase, ascii-only, dashes):
 
 ```bash
-slug=$(printf '%s' "<task-title>" \
+slug=$(printf '%s' "<subtask-title>" \
   | iconv -t ascii//translit 2>/dev/null \
   | tr '[:upper:]' '[:lower:]' \
   | tr -cs 'a-z0-9' '-' \
   | sed 's/^-//; s/-$//')
-branch="feat/<task-id>-$slug"
-bash <skill-dir>/scripts/worktree.sh create <task-id> "$branch"
+branch="feat/<issue-id>-$slug"
+bash <skill-dir>/scripts/worktree.sh create <issue-id> "$branch"
 ```
 
-The script creates `<repo-root>/.worktrees/<task-id>` on `$branch` based off the current HEAD of `main`.
+The script creates `<repo-root>/.worktrees/<issue-id>` on `$branch` based off the current HEAD of the repo's default branch (from the repo map when available, else `origin/main` or HEAD).
 
-### 4. Generate `CLAUDE.md` in the worktree
+### 5. Generate `CLAUDE.md` in the worktree
 
 KB injection is **lazy** — the child agent fetches KB entries from Linear only when it needs them. Do NOT precopy KB bodies into `CLAUDE.md`.
 
@@ -83,7 +91,7 @@ Allocated port: <PORT>
 
 Detect the stack by reading manifests at the repo root. Keep it to 3-6 lines.
 
-### 5. Generate `setup.sh` and `run.sh`
+### 6. Generate `setup.sh` and `run.sh`
 
 Both go at the worktree root, `chmod +x` them.
 
@@ -100,23 +108,23 @@ export PORT=<PORT>
 
 If you cannot confidently infer the run command, leave a TODO comment and tell the user.
 
-### 6. Spawn the tmux window
+### 7. Spawn the tmux window
 
 ```bash
-bash <skill-dir>/scripts/tmux.sh spawn <task-id> <worktree-path>
+bash <skill-dir>/scripts/tmux.sh spawn <issue-id> <worktree-path>
 ```
 
-This creates window `forge-<task-id>` in session `forge` with:
+This creates window `forge-<issue-id>` in session `forge` with:
 
 - Left pane (70%): `claude`
 - Right pane (30%): `./setup.sh && ./run.sh`
 
-### 7. Update Linear
+### 8. Update Linear
 
 Via MCP:
 
 - Set the issue status to `in_progress`.
-- Add a comment: `Forge started — branch \`feat/<task-id>-<slug>\`, port <PORT>.`
+- Add a comment: `Forge started — branch \`feat/<issue-id>-<slug>\`, port <PORT>.`
 
 ## Output
 

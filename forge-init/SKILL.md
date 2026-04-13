@@ -62,8 +62,21 @@ Ensure these labels exist on the team (create any missing):
 - `kb:design`
 - `kb:api-standards`
 - `kb:ops`
+- `kb:repos`
 
 Any additional `kb:*` label can be created on demand by `forge-intake`.
+
+Seed a starter `kb:repos` issue in the `KB` project (title `Repositories`, label `kb:repos`) with an empty markdown table and a commented example row — `forge-bootstrap` parses this on new-machine setup:
+
+```markdown
+# Repositories
+
+| Name | Clone URL | Default branch | Setup |
+|------|-----------|----------------|-------|
+<!-- example: | web | git@github.com:acme/web.git | main | pnpm install | -->
+
+<!-- parseable by forge-bootstrap — keep columns stable -->
+```
 
 ### 4. Create the Inbox project
 

@@ -44,6 +44,15 @@ Full plan content is better produced by `forge-business-plan`. If user dumps raw
 ### 6. API standards / Ops / other domain → KB issue, new label `kb:<topic>`
 If the input is important context that doesn't fit existing `kb:*` labels, create a new `kb:<topic>` label on the team and attach it. Keep labels lowercase, dash-separated, always prefixed with `kb:`.
 
+### 6b. Repositories → update the `kb:repos` KB issue
+Statements like "we have a repo called web at github.com/acme/web", "add backend repo", "move the mobile app to develop branch". Find the issue labeled `kb:repos` in the team's `KB` project, parse its markdown table, add/update the matching row, and save.
+
+Row schema: `| Name | Clone URL | Default branch | Setup |`.
+
+If no `kb:repos` issue exists yet, create it with the starter format from `forge-init`.
+
+`forge-bootstrap` reads this issue to clone everything on a new machine — so keep the table shape stable.
+
 ### 7. Roadmap item → place under a Linear initiative
 - "Now" items → under the `Now` initiative
 - "Next quarter" items → under `Next`
